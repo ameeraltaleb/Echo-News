@@ -17,11 +17,17 @@ export default function BreakingNews() {
     const fetchLatest = async () => {
       try {
         const res = await fetch(`/api/articles?lang=${language}&limit=5`);
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          setArticles(data);
+        const contentType = res.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            setArticles(data);
+          } else {
+            console.error('API returned non-array data:', data);
+            setArticles([]);
+          }
         } else {
-          console.error('API returned non-array data:', data);
+          console.error('API returned non-JSON data for breaking news');
           setArticles([]);
         }
       } catch (error) {

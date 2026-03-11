@@ -4,6 +4,9 @@ const connectionString = process.env.DATABASE_URL || '';
 
 export const sql = connectionString ? postgres(connectionString, {
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  connect_timeout: 5,
+  idle_timeout: 5,
+  max_lifetime: 60 * 5,
 }) : null as any;
 
 export async function initPostgresDb() {

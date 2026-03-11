@@ -27,11 +27,17 @@ export default function Home() {
       setLoading(true);
       try {
         const res = await fetch(`/api/articles?lang=${language}&limit=10`);
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          setArticles(data);
+        const contentType = res.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            setArticles(data);
+          } else {
+            console.error('API returned non-array data:', data);
+            setArticles([]);
+          }
         } else {
-          console.error('API returned non-array data:', data);
+          console.error('API returned non-JSON data for home articles');
           setArticles([]);
         }
       } catch (error) {

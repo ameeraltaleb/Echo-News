@@ -50,8 +50,13 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       if (res.ok) {
-        const data = await res.json();
-        setSettings(data);
+        const contentType = res.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const data = await res.json();
+          setSettings(data);
+        } else {
+          console.error('API returned non-JSON data for settings');
+        }
       }
     } catch (error) {
       console.error('Failed to fetch settings:', error);

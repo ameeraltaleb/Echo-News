@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import { createServer as createViteServer } from 'vite';
 import { sql, initPostgresDb } from './src/db/postgres.js';
@@ -28,15 +29,31 @@ async function startServer() {
   const PORT = process.env.PORT || 3000;
 
   if (!process.env.DATABASE_URL) {
-    console.error("CRITICAL ERROR: DATABASE_URL environment variable is not set.");
-    console.error("Please set DATABASE_URL to your PostgreSQL connection string.");
-    process.exit(1);
+    console.warn("WARNING: DATABASE_URL environment variable is not set.");
+    console.warn("The server will start, but database-dependent features will not work.");
+    console.warn("Please set DATABASE_URL to your PostgreSQL connection string in a .env file.");
+  } else {
+    await initPostgresDb();
   }
-
-  await initPostgresDb();
 
   app.use(express.json());
   app.use('/uploads', express.static(uploadDir));
+
+  // Middleware to check DB connection for API routes
+  app.use((req, res, next) => {
+    if (!req.path.startsWith('/api')) return next();
+    
+    // Allow login without DB just in case, though it might not be useful
+    if (req.path === '/api/admin/login') return next();
+    
+    if (!process.env.DATABASE_URL) {
+      return res.status(503).json({ 
+        error: 'Service Unavailable', 
+        message: 'Database is not configured. Please set DATABASE_URL.' 
+      });
+    }
+    next();
+  });
 
   // API Routes
   app.get('/api/articles', async (req, res) => {
