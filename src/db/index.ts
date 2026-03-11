@@ -13,9 +13,9 @@ export const db = new Database(dbPath);
 db.pragma('foreign_keys = ON');
 
 // Migration: Add status column if it doesn't exist
-try {
-  db.prepare("SELECT status FROM articles LIMIT 1").get();
-} catch (e) {
+const tableInfoArticles = db.prepare("PRAGMA table_info(articles)").all() as { name: string }[];
+const hasStatus = tableInfoArticles.some(col => col.name === 'status');
+if (!hasStatus) {
   try {
     db.exec("ALTER TABLE articles ADD COLUMN status TEXT DEFAULT 'published'");
     console.log("Migration: Added status column to articles table");
@@ -25,9 +25,8 @@ try {
 }
 
 // Migration: Add tags column if it doesn't exist
-try {
-  db.prepare("SELECT tags FROM articles LIMIT 1").get();
-} catch (e) {
+const hasTags = tableInfoArticles.some(col => col.name === 'tags');
+if (!hasTags) {
   try {
     db.exec("ALTER TABLE articles ADD COLUMN tags TEXT DEFAULT '[]'");
     console.log("Migration: Added tags column to articles table");

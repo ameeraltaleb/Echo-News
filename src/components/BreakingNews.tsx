@@ -18,7 +18,12 @@ export default function BreakingNews() {
       try {
         const res = await fetch(`/api/articles?lang=${language}&limit=5`);
         const data = await res.json();
-        setArticles(data);
+        if (Array.isArray(data)) {
+          setArticles(data);
+        } else {
+          console.error('API returned non-array data:', data);
+          setArticles([]);
+        }
       } catch (error) {
         console.error('Failed to fetch breaking news', error);
       }

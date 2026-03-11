@@ -43,7 +43,12 @@ export default function Category() {
         // Fetch Articles for this category
         const artRes = await fetch(`/api/articles?lang=${language}&category=${slug}&limit=20`);
         const artData = await artRes.json();
-        setArticles(artData);
+        if (Array.isArray(artData)) {
+          setArticles(artData);
+        } else {
+          console.error('API returned non-array data:', artData);
+          setArticles([]);
+        }
       } catch (error) {
         console.error('Failed to fetch category data', error);
       } finally {

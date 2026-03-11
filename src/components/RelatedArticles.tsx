@@ -26,7 +26,12 @@ export default function RelatedArticles({ categorySlug, currentArticleId }: Rela
       try {
         const res = await fetch(`/api/articles?lang=${language}&category=${categorySlug}&exclude=${currentArticleId}&limit=3`);
         const data = await res.json();
-        setArticles(data);
+        if (Array.isArray(data)) {
+          setArticles(data);
+        } else {
+          console.error('API returned non-array data:', data);
+          setArticles([]);
+        }
       } catch (error) {
         console.error('Failed to fetch related articles', error);
       } finally {
