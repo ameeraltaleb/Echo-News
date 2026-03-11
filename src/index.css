@@ -1,0 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Kufi+Arabic:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", "Noto Kufi Arabic", ui-sans-serif, system-ui, sans-serif;
+  --color-primary: var(--primary-color, #B80000);
+}
+
+@variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  body {
+    overflow-x: hidden;
+  }
+  
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: white;
+    color: #18181b; /* zinc-900 */
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  html.dark {
+    background-color: #09090b; /* zinc-950 */
+    color: #f4f4f5; /* zinc-100 */
+  }
+  
+  html[lang="ar"] {
+    font-family: "Noto Kufi Arabic", sans-serif;
+  }
+  
+  html[lang="en"] {
+    font-family: "Inter", sans-serif;
+  }
+}
