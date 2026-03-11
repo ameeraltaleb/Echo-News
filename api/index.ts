@@ -29,10 +29,11 @@ const ensureDb = async () => {
   }
 };
 
+const apiRouter = express.Router();
+
 // Middleware to check DB connection for API routes
-app.use(async (req, res, next) => {
-  if (!req.path.startsWith('/api')) return next();
-  if (req.path === '/api/admin/login') return next();
+apiRouter.use(async (req, res, next) => {
+  if (req.path.includes('/admin/login')) return next();
   
   if (!process.env.DATABASE_URL) {
     return res.status(503).json({ 
@@ -45,7 +46,7 @@ app.use(async (req, res, next) => {
 });
 
 // API Routes
-app.get('/api/articles', async (req, res) => {
+apiRouter.get('/articles', async (req, res) => {
   const lang = req.query.lang || 'en';
   const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;
   const categorySlug = req.query.category as string;
@@ -100,7 +101,7 @@ app.get('/api/articles', async (req, res) => {
   }
 });
 
-app.get('/api/categories/:slug', async (req, res) => {
+apiRouter.get('/categories/:slug', async (req, res) => {
   const lang = req.query.lang || 'en';
   const slug = req.params.slug;
   try {
@@ -117,7 +118,7 @@ app.get('/api/categories/:slug', async (req, res) => {
   }
 });
 
-app.get('/api/articles/:id', async (req, res) => {
+apiRouter.get('/articles/:id', async (req, res) => {
   const lang = req.query.lang || 'en';
   const id = req.params.id;
   
@@ -147,7 +148,7 @@ app.get('/api/articles/:id', async (req, res) => {
   }
 });
 
-app.get('/api/categories', async (req, res) => {
+apiRouter.get('/categories', async (req, res) => {
   const lang = req.query.lang || 'en';
   try {
     const langCol = lang === 'ar' ? 'name_ar' : 'name_en';
@@ -172,8 +173,8 @@ const isAdmin = (req: express.Request, res: express.Response, next: express.Next
 };
 
 // Maintenance Mode Middleware
-app.use(async (req, res, next) => {
-  if (req.path.startsWith('/api/admin') || req.path.startsWith('/api/admin/login') || !req.path.startsWith('/api')) {
+apiRouter.use(async (req, res, next) => {
+  if (req.path.startsWith('/admin') || req.path.startsWith('/admin/login')) {
     return next();
   }
 
@@ -188,7 +189,7 @@ app.use(async (req, res, next) => {
   next();
 });
 
-app.get('/api/settings', async (req, res) => {
+apiRouter.get('/settings', async (req, res) => {
   try {
     const settingsRows = await sql`SELECT key, value FROM settings`;
     const settings = settingsRows.reduce((acc, row) => {
@@ -201,7 +202,7 @@ app.get('/api/settings', async (req, res) => {
   }
 });
 
-app.get('/api/admin/settings', isAdmin, async (req, res) => {
+apiRouter.get('/admin/settings', isAdmin, async (req, res) => {
   try {
     const settings = await sql`SELECT key, value FROM settings`;
     res.json(settings);
@@ -210,7 +211,7 @@ app.get('/api/admin/settings', isAdmin, async (req, res) => {
   }
 });
 
-app.post('/api/admin/settings', isAdmin, async (req, res) => {
+apiRouter.post('/admin/settings', isAdmin, async (req, res) => {
   const settingsObj = req.body;
   try {
     for (const [key, value] of Object.entries(settingsObj)) {
@@ -226,17 +227,19 @@ app.post('/api/admin/settings', isAdmin, async (req, res) => {
   }
 });
 
-app.post('/api/admin/login', (req, res) => {
-  const { password } = req.body;
-  const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
-  if (password === adminPassword) {
+apiRouter.post('/admin/login', (req, res) => {
+  // Trim spaces just in case they were copied accidentally
+  const inputPassword = (req.body.password || '').trim();
+  const expectedPassword = (process.env.ADMIN_PASSWORD || 'admin123').trim();
+  
+  if (inputPassword === expectedPassword) {
     res.json({ token: ADMIN_TOKEN });
   } else {
     res.status(401).json({ error: 'Invalid password' });
   }
 });
 
-app.get('/api/admin/articles', isAdmin, async (req, res) => {
+apiRouter.get('/admin/articles', isAdmin, async (req, res) => {
   try {
     const articles = await sql`
       SELECT id, title_en, title_ar, category_id, published_at, views, author, status, tags,
@@ -251,7 +254,7 @@ app.get('/api/admin/articles', isAdmin, async (req, res) => {
 });
 
 // VERCEL COMPATIBLE UPLOAD (Base64)
-app.post('/api/admin/upload', isAdmin, upload.single('image'), (req, res) => {
+apiRouter.post('/admin/upload', isAdmin, upload.single('image'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No file uploaded' });
   }
@@ -261,7 +264,7 @@ app.post('/api/admin/upload', isAdmin, upload.single('image'), (req, res) => {
   res.json({ url: base64Image });
 });
 
-app.post('/api/admin/articles', isAdmin, async (req, res) => {
+apiRouter.post('/admin/articles', isAdmin, async (req, res) => {
   const { 
     category_id, title_en, title_ar, summary_en, summary_ar, 
     content_en, content_ar, image_url, author, status, published_at, tags 
@@ -285,7 +288,7 @@ app.post('/api/admin/articles', isAdmin, async (req, res) => {
   }
 });
 
-app.put('/api/admin/articles/:id', isAdmin, async (req, res) => {
+apiRouter.put('/admin/articles/:id', isAdmin, async (req, res) => {
   const { id } = req.params;
   const { 
     category_id, title_en, title_ar, summary_en, summary_ar, 
@@ -307,7 +310,7 @@ app.put('/api/admin/articles/:id', isAdmin, async (req, res) => {
   }
 });
 
-app.delete('/api/admin/articles/:id', isAdmin, async (req, res) => {
+apiRouter.delete('/admin/articles/:id', isAdmin, async (req, res) => {
   const { id } = req.params;
   try {
     await sql`DELETE FROM articles WHERE id = ${id}`;
@@ -316,6 +319,10 @@ app.delete('/api/admin/articles/:id', isAdmin, async (req, res) => {
     res.status(500).json({ error: 'Failed to delete article' });
   }
 });
+
+// Mount the router at both /api and / to handle Vercel rewrite quirks
+app.use('/api', apiRouter);
+app.use('/', apiRouter);
 
 // Vite middleware for local development
 if (!process.env.VERCEL && process.env.NODE_ENV !== 'production') {
