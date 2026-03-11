@@ -1,19 +1,27 @@
 import postgres from 'postgres';
 
-const connectionString = process.env.DATABASE_URL || '';
+import postgres from 'postgres';
 
-export const sql = connectionString ? postgres(connectionString, {
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-  connect_timeout: 5,
-  idle_timeout: 5,
-  max_lifetime: 60 * 5,
-}) : null as any;
+let sqlInstance: any = null;
+
+export function getSql() {
+  if (!sqlInstance) {
+    const connectionString = process.env.DATABASE_URL;
+    if (!connectionString) {
+      throw new Error('DATABASE_URL is not set');
+    }
+    sqlInstance = postgres(connectionString, {
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+      connect_timeout: 5,
+      idle_timeout: 5,
+      max_lifetime: 60 * 5,
+    });
+  }
+  return sqlInstance;
+}
 
 export async function initPostgresDb() {
-  if (!sql) {
-    console.warn('DATABASE_URL is not set. PostgreSQL initialization skipped.');
-    return;
-  }
+  const sql = getSql();
 
   try {
     await sql`
@@ -63,7 +71,6 @@ export async function initPostgresDb() {
         ('instagram_url', 'https://instagram.com'),
         ('maintenance_mode', 'false')
       `;
-      console.log('PostgreSQL: Settings seeded successfully.');
     }
 
     // Seed categories
@@ -78,11 +85,11 @@ export async function initPostgresDb() {
         ('health', 'Health', 'صحة'),
         ('sports', 'Sports', 'رياضة')
       `;
-      console.log('PostgreSQL: Categories seeded successfully.');
     }
     
     console.log('PostgreSQL Database initialized successfully.');
   } catch (error) {
     console.error('Failed to initialize PostgreSQL database:', error);
+    throw error; // Rethrow to be caught by API handler
   }
 }

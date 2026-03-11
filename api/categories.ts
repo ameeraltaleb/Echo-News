@@ -1,11 +1,12 @@
-import { sql, initPostgresDb } from '../src/db/postgres.js';
+import { getSql, initPostgresDb } from '../src/db/postgres.js';
 
 async function ensureDb() {
-  if (!sql) await initPostgresDb();
+  await initPostgresDb();
 }
 
 export default async function handler(req, res) {
   await ensureDb();
+  const sql = getSql();
   const lang = req.query.lang || 'en';
   const slug = req.query.slug;
   
