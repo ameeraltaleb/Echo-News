@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import { createServer as createViteServer } from 'vite';
-import { sql, initPostgresDb } from '../src/db/postgres.js';
+import { sql, initPostgresDb } from '../src/db/postgres';
 import multer from 'multer';
 import path from 'path';
 
@@ -227,11 +227,29 @@ apiRouter.post('/admin/settings', isAdmin, async (req, res) => {
   }
 });
 
-apiRouter.post('/admin/login', (req, res) => {
-  // Trim spaces just in case they were copied accidentally
+app.post('/api/admin/login', (req, res) => {
   const inputPassword = (req.body.password || '').trim();
   const expectedPassword = (process.env.ADMIN_PASSWORD || 'admin123').trim();
-  
+  if (inputPassword === expectedPassword) {
+    res.json({ token: ADMIN_TOKEN });
+  } else {
+    res.status(401).json({ error: 'Invalid password' });
+  }
+});
+
+app.post('/admin/login', (req, res) => {
+  const inputPassword = (req.body.password || '').trim();
+  const expectedPassword = (process.env.ADMIN_PASSWORD || 'admin123').trim();
+  if (inputPassword === expectedPassword) {
+    res.json({ token: ADMIN_TOKEN });
+  } else {
+    res.status(401).json({ error: 'Invalid password' });
+  }
+});
+
+apiRouter.post('/admin/login', (req, res) => {
+  const inputPassword = (req.body.password || '').trim();
+  const expectedPassword = (process.env.ADMIN_PASSWORD || 'admin123').trim();
   if (inputPassword === expectedPassword) {
     res.json({ token: ADMIN_TOKEN });
   } else {

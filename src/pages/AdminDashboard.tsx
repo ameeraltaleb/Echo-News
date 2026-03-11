@@ -46,11 +46,14 @@ export default function AdminDashboard() {
       if (res.ok) {
         const data = await res.json();
         setArticles(data);
-      } else {
+      } else if (res.status === 401) {
         handleLogout();
+      } else {
+        showToast('Failed to load articles. Check database connection.', 'error');
       }
     } catch (err) {
       console.error(err);
+      showToast('Network error while loading articles.', 'error');
     } finally {
       setLoading(false);
     }
