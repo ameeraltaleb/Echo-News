@@ -1,7 +1,8 @@
 import 'dotenv/config';
 import express from 'express';
+import serverless from 'serverless-http';
 import { createServer as createViteServer } from 'vite';
-import { sql, initPostgresDb } from '../src/db/postgres';
+import { sql, initPostgresDb } from '../src/db/postgres.js';
 import multer from 'multer';
 import path from 'path';
 
@@ -48,11 +49,11 @@ apiRouter.use(async (req, res, next) => {
 // API Routes
 apiRouter.get('/articles', async (req, res) => {
   const lang = req.query.lang || 'en';
-  const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;
-  const categorySlug = req.query.category as string;
-  const searchQuery = req.query.q as string;
-  const sort = req.query.sort as string;
-  const excludeId = req.query.exclude ? parseInt(req.query.exclude as string) : null;
+  const limit = req.query.limit ? parseInt(String(req.query.limit)) : 20;
+  const categorySlug = String(req.query.category || '');
+  const searchQuery = String(req.query.q || '');
+  const sort = String(req.query.sort || '');
+  const excludeId = req.query.exclude ? parseInt(String(req.query.exclude)) : null;
   
   try {
     let query = `
@@ -227,29 +228,11 @@ apiRouter.post('/admin/settings', isAdmin, async (req, res) => {
   }
 });
 
-app.post('/api/admin/login', (req, res) => {
-  const inputPassword = (req.body.password || '').trim();
-  const expectedPassword = (process.env.ADMIN_PASSWORD || 'admin123').trim();
-  if (inputPassword === expectedPassword) {
-    res.json({ token: ADMIN_TOKEN });
-  } else {
-    res.status(401).json({ error: 'Invalid password' });
-  }
-});
-
-app.post('/admin/login', (req, res) => {
-  const inputPassword = (req.body.password || '').trim();
-  const expectedPassword = (process.env.ADMIN_PASSWORD || 'admin123').trim();
-  if (inputPassword === expectedPassword) {
-    res.json({ token: ADMIN_TOKEN });
-  } else {
-    res.status(401).json({ error: 'Invalid password' });
-  }
-});
-
+// Admin Login Route (POST only)
 apiRouter.post('/admin/login', (req, res) => {
   const inputPassword = (req.body.password || '').trim();
   const expectedPassword = (process.env.ADMIN_PASSWORD || 'admin123').trim();
+  
   if (inputPassword === expectedPassword) {
     res.json({ token: ADMIN_TOKEN });
   } else {
@@ -364,4 +347,4 @@ if (!process.env.VERCEL) {
   });
 }
 
-export default app;
+export default serverless(app);
