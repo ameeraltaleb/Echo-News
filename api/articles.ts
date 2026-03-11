@@ -1,6 +1,11 @@
-import { sql } from '../src/db/postgres.js';
+import { sql, initPostgresDb } from '../src/db/postgres.js';
+
+async function ensureDb() {
+  if (!sql) await initPostgresDb();
+}
 
 export default async function handler(req, res) {
+  await ensureDb();
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
