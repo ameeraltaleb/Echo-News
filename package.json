@@ -7,8 +7,8 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "dev": "tsx server-production.ts",
-    "start": "tsx server-production.ts",
+    "dev": "tsx api/index.ts",
+    "start": "tsx api/index.ts",
     "build": "vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist",
