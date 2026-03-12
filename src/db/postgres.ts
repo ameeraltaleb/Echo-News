@@ -9,10 +9,12 @@ export function getSql() {
       throw new Error('DATABASE_URL is not set');
     }
     sqlInstance = postgres(connectionString, {
-      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-      connect_timeout: 5,
-      idle_timeout: 5,
-      max_lifetime: 60 * 5,
+      ssl: connectionString.includes('supabase.com') || connectionString.includes('pooler') 
+        ? { rejectUnauthorized: false } 
+        : (process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false),
+      connect_timeout: 10,
+      idle_timeout: 20,
+      max_lifetime: 60 * 30,
     });
   }
   return sqlInstance;
