@@ -28,20 +28,28 @@ export default function Category() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [category, setCategory] = useState<CategoryData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
+      setError(null);
       try {
         // Fetch Category Info
         const catRes = await fetch(`/api/categories/${slug}?lang=${language}`);
-        if (catRes.ok) {
-          const catData = await catRes.json();
-          setCategory(catData);
+        if (!catRes.ok) {
+          const errorData = await catRes.json().catch(() => ({}));
+          throw new Error(errorData.details || errorData.error || `Category fetch failed: ${catRes.status}`);
         }
+        const catData = await catRes.json();
+        setCategory(catData);
 
         // Fetch Articles for this category
         const artRes = await fetch(`/api/articles?lang=${language}&category=${slug}&limit=20`);
+        if (!artRes.ok) {
+          const errorData = await artRes.json().catch(() => ({}));
+          throw new Error(errorData.details || errorData.error || `Articles fetch failed: ${artRes.status}`);
+        }
         const artData = await artRes.json();
         if (Array.isArray(artData)) {
           setArticles(artData);
@@ -49,8 +57,9 @@ export default function Category() {
           console.error('API returned non-array data:', artData);
           setArticles([]);
         }
-      } catch (error) {
-        console.error('Failed to fetch category data', error);
+      } catch (err: any) {
+        console.error('Failed to fetch category data', err);
+        setError(err.message);
       } finally {
         setLoading(false);
       }
@@ -80,6 +89,35 @@ export default function Category() {
           <ArticleCardSkeleton />
         </div>
       </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="text-center py-12 px-4"
+      >
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-8 max-w-2xl mx-auto">
+          <h2 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-4">
+            {language === 'en' ? 'Database Connection Error' : 'خطأ في الاتصال بقاعدة البيانات'}
+          </h2>
+          <p className="text-zinc-600 dark:text-zinc-400 mb-6">
+            {t('failedToLoadArticles')}
+          </p>
+          <div className="bg-white dark:bg-zinc-950 p-4 rounded-lg border border-zinc-200 dark:border-zinc-800 text-left overflow-auto">
+            <p className="text-xs font-mono text-zinc-500 uppercase mb-2 tracking-widest">Error Details:</p>
+            <code className="text-sm text-red-500 break-words">{error}</code>
+          </div>
+          <button 
+            onClick={() => window.location.reload()}
+            className="mt-8 px-6 py-2 bg-primary text-white font-bold rounded-full hover:opacity-90 transition-opacity"
+          >
+            {language === 'en' ? 'Try Again' : 'إعادة المحاولة'}
+          </button>
+        </div>
+      </motion.div>
     );
   }
 

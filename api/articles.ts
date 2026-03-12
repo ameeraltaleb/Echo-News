@@ -59,8 +59,12 @@ export default async function handler(req, res) {
 
     const articles = await sql.unsafe(query, params);
     res.json(articles);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to fetch articles' });
+  } catch (error: any) {
+    console.error('API Articles Error:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch articles', 
+      details: error.message,
+      env: process.env.NODE_ENV
+    });
   }
 }

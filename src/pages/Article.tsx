@@ -28,17 +28,23 @@ export default function Article() {
   const { language, t } = useLanguage();
   const [article, setArticle] = useState<ArticleData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchArticle = async () => {
       setLoading(true);
+      setError(null);
       try {
         const res = await fetch(`/api/articles/${id}?lang=${language}`);
-        if (!res.ok) throw new Error('Not found');
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          throw new Error(errorData.details || errorData.error || `Article fetch failed: ${res.status}`);
+        }
         const data = await res.json();
         setArticle(data);
-      } catch (error) {
-        console.error('Failed to fetch article', error);
+      } catch (err: any) {
+        console.error('Failed to fetch article', err);
+        setError(err.message);
       } finally {
         setLoading(false);
       }
@@ -50,6 +56,35 @@ export default function Article() {
 
   if (loading) {
     return <ArticleDetailSkeleton />;
+  }
+
+  if (error) {
+    return (
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="text-center py-12 px-4"
+      >
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-8 max-w-2xl mx-auto">
+          <h2 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-4">
+            {language === 'en' ? 'Database Connection Error' : 'خطأ في الاتصال بقاعدة البيانات'}
+          </h2>
+          <p className="text-zinc-600 dark:text-zinc-400 mb-6">
+            {t('failedToLoadArticles')}
+          </p>
+          <div className="bg-white dark:bg-zinc-950 p-4 rounded-lg border border-zinc-200 dark:border-zinc-800 text-left overflow-auto">
+            <p className="text-xs font-mono text-zinc-500 uppercase mb-2 tracking-widest">Error Details:</p>
+            <code className="text-sm text-red-500 break-words">{error}</code>
+          </div>
+          <button 
+            onClick={() => window.location.reload()}
+            className="mt-8 px-6 py-2 bg-primary text-white font-bold rounded-full hover:opacity-90 transition-opacity"
+          >
+            {language === 'en' ? 'Try Again' : 'إعادة المحاولة'}
+          </button>
+        </div>
+      </motion.div>
+    );
   }
 
   if (!article) {

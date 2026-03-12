@@ -1,7 +1,5 @@
 import postgres from 'postgres';
 
-import postgres from 'postgres';
-
 let sqlInstance: any = null;
 
 export function getSql() {

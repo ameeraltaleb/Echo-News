@@ -23,8 +23,11 @@ export default async function handler(req, res) {
         const categories = await sql.unsafe(`SELECT id, ${langCol} as name, slug FROM categories`);
         res.json(categories);
     }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to fetch categories' });
+  } catch (error: any) {
+    console.error('API Categories Error:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch categories',
+      details: error.message 
+    });
   }
 }
