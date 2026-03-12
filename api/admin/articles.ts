@@ -7,8 +7,6 @@ async function ensureDb() {
 }
 
 export default async function handler(req, res) {
-  await ensureDb();
-  const sql = getSql();
   const authHeader = req.headers.authorization;
   if (authHeader !== `Bearer ${ADMIN_TOKEN}`) {
     return res.status(401).json({ error: 'Unauthorized' });
@@ -18,6 +16,9 @@ export default async function handler(req, res) {
   const { id } = req.query;
 
   try {
+    await ensureDb();
+    const sql = getSql();
+
     if (method === 'GET') {
       const articles = await sql`
         SELECT id, title_en, title_ar, category_id, published_at, views, author, status, tags,

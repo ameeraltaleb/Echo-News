@@ -5,8 +5,6 @@ async function ensureDb() {
 }
 
 export default async function handler(req, res) {
-  await ensureDb();
-  const sql = getSql();
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -19,6 +17,9 @@ export default async function handler(req, res) {
   const excludeId = req.query.exclude ? parseInt(String(req.query.exclude)) : null;
   
   try {
+    await ensureDb();
+    const sql = getSql();
+
     let query = `
       SELECT a.id, a.title_${lang} as title, a.summary_${lang} as summary, 
              a.image_url, a.category_id, a.published_at, a.views, a.status, a.tags

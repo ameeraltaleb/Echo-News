@@ -5,12 +5,12 @@ async function ensureDb() {
 }
 
 export default async function handler(req, res) {
-  await ensureDb();
-  const sql = getSql();
   const lang = req.query.lang || 'en';
   const slug = req.query.slug;
   
   try {
+    await ensureDb();
+    const sql = getSql();
     const langCol = lang === 'ar' ? 'name_ar' : 'name_en';
     
     if (slug) {
