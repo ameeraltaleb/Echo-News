@@ -63,7 +63,7 @@ export default async function handler(req, res) {
       res.status(405).json({ error: 'Method not allowed' });
     }
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to process request' });
+    console.error('Article save error:', error);
+    res.status(500).json({ error: 'Failed to process request', details: error instanceof Error ? error.message : String(error) });
   }
 }
