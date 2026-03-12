@@ -14,7 +14,7 @@ export default async function handler(req, res) {
     const langCol = lang === 'ar' ? 'name_ar' : 'name_en';
 
     const categories = await sql`
-      SELECT id, ${sql.unsafe(langCol)} as name, slug 
+      SELECT id, ${sql(langCol)} as name, slug 
       FROM categories 
       WHERE slug = ${slug}
     `;

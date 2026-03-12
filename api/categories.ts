@@ -14,13 +14,20 @@ export default async function handler(req, res) {
     const langCol = lang === 'ar' ? 'name_ar' : 'name_en';
     
     if (slug) {
-        const category = await sql.unsafe(`SELECT id, ${langCol} as name, slug FROM categories WHERE slug = $1`, [slug]);
+        const category = await sql`
+          SELECT id, ${sql(langCol)} as name, slug 
+          FROM categories 
+          WHERE slug = ${slug}
+        `;
         if (category.length === 0) {
             return res.status(404).json({ error: 'Category not found' });
         }
         res.json(category[0]);
     } else {
-        const categories = await sql.unsafe(`SELECT id, ${langCol} as name, slug FROM categories`);
+        const categories = await sql`
+          SELECT id, ${sql(langCol)} as name, slug 
+          FROM categories
+        `;
         res.json(categories);
     }
   } catch (error: any) {

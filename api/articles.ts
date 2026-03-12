@@ -20,45 +20,22 @@ export default async function handler(req, res) {
     await ensureDb();
     const sql = getSql();
 
-    let query = `
-      SELECT a.id, a.title_${lang} as title, a.summary_${lang} as summary, 
+    const titleCol = `title_${lang}`;
+    const summaryCol = `summary_${lang}`;
+
+    const articles = await sql`
+      SELECT a.id, a.${sql(titleCol)} as title, a.${sql(summaryCol)} as summary, 
              a.image_url, a.category_id, a.published_at, a.views, a.status, a.tags
       FROM articles a
+      ${categorySlug ? sql`JOIN categories c ON a.category_id = c.id` : sql``}
+      WHERE a.status = 'published'
+      AND a.published_at <= ${new Date().toISOString()}
+      ${categorySlug ? sql`AND c.slug = ${categorySlug}` : sql``}
+      ${excludeId ? sql`AND a.id != ${excludeId}` : sql``}
+      ${searchQuery ? sql`AND (a.title_en ILIKE ${'%' + searchQuery + '%'} OR a.title_ar ILIKE ${'%' + searchQuery + '%'} OR a.summary_en ILIKE ${'%' + searchQuery + '%'} OR a.summary_ar ILIKE ${'%' + searchQuery + '%'})` : sql``}
+      ORDER BY ${sort === 'views' ? sql`a.views DESC` : sql`a.published_at DESC`}
+      LIMIT ${limit}
     `;
-    const params: any[] = [];
-    let pIdx = 1;
-    const conditions: string[] = [" a.status = 'published' ", ` a.published_at <= $${pIdx++} `];
-    params.push(new Date().toISOString());
-
-    if (categorySlug) {
-      query += ` JOIN categories c ON a.category_id = c.id `;
-      conditions.push(` c.slug = $${pIdx++} `);
-      params.push(categorySlug);
-    }
-
-    if (excludeId) {
-      conditions.push(` a.id != $${pIdx++} `);
-      params.push(excludeId);
-    }
-
-    if (searchQuery) {
-      conditions.push(` (a.title_en ILIKE $${pIdx} OR a.title_ar ILIKE $${pIdx} OR a.summary_en ILIKE $${pIdx} OR a.summary_ar ILIKE $${pIdx}) `);
-      params.push(`%${searchQuery}%`);
-      pIdx++;
-    }
-
-    if (conditions.length > 0) {
-      query += ` WHERE ` + conditions.join(' AND ');
-    }
-
-    if (sort === 'views') {
-      query += ` ORDER BY a.views DESC LIMIT $${pIdx++} `;
-    } else {
-      query += ` ORDER BY a.published_at DESC LIMIT $${pIdx++} `;
-    }
-    params.push(limit);
-
-    const articles = await sql.unsafe(query, params);
     res.json(articles);
   } catch (error: any) {
     console.error('API Articles Error:', error);

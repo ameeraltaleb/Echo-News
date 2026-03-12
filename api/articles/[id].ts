@@ -12,8 +12,11 @@ export default async function handler(req, res) {
     await ensureDb();
     const sql = getSql();
 
+    const titleCol = `title_${lang}`;
+    const contentCol = `content_${lang}`;
+
     const articles = await sql`
-      SELECT a.id, a.title_${lang} as title, a.content_${lang} as content, 
+      SELECT a.id, a.${sql(titleCol)} as title, a.${sql(contentCol)} as content, 
              a.image_url, a.category_id, a.published_at, a.views, a.author, a.tags,
              c.slug as category_slug
       FROM articles a
