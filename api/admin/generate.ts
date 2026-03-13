@@ -74,6 +74,12 @@ export default async function handler(req: any, res: any) {
 
     const generatedArticle = JSON.parse(jsonStr);
 
+    console.log('--- GEMINI GENERATED KEYS ---');
+    console.log(Object.keys(generatedArticle));
+    if (!generatedArticle.content_en || generatedArticle.content_en.trim() === '') {
+       console.log('WARNING: content_en is EMPTY or MISSING!');
+    }
+    
     // 5. Return to frontend
     res.status(200).json(generatedArticle);
   } catch (err: any) {
