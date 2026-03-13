@@ -44,7 +44,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 
   const fetchSettings = async () => {
     try {
-      const res = await fetch('/api/settings');
+      const res = await fetch('/api/admin/settings');
       if (res.status === 503) {
         setSettings(prev => ({ ...prev, maintenance_mode: 'true' }));
         return;

@@ -6,9 +6,12 @@ async function ensureDb() {
 }
 
 export default async function handler(req, res) {
-  const payload = await verifyAuthHeader(req.headers.authorization);
-  if (!payload || payload.role !== 'admin') {
-    return res.status(401).json({ error: 'Unauthorized' });
+  // Public GET doesn't need auth, admin POST does
+  if (req.method === 'POST') {
+    const payload = await verifyAuthHeader(req.headers.authorization);
+    if (!payload || payload.role !== 'admin') {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
   }
 
   try {

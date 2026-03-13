@@ -12,9 +12,9 @@ export function getSql() {
       ssl: connectionString.includes('supabase.com') || connectionString.includes('pooler') 
         ? { rejectUnauthorized: false } 
         : (process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false),
-      connect_timeout: 10,
-      idle_timeout: 10,
-      max_lifetime: 60 * 30,
+      connect_timeout: 5,
+      idle_timeout: 5,
+      max_lifetime: 60 * 10,
       max: 1, // Crucial for Vercel serverless functions to avoid connection exhaustion
     });
   }
