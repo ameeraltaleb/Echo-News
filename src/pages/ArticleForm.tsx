@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { Save, X, ArrowLeft, Image as ImageIcon, Globe, Upload, Loader2, Sparkles, MessageSquare } from 'lucide-react';
+import { Save, X, ArrowLeft, Image as ImageIcon, Globe, Upload, Loader2, Sparkles, MessageSquare, Search } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import RichTextEditor from '../components/RichTextEditor';
 
@@ -27,6 +27,15 @@ export default function ArticleForm() {
   const [aiPrompt, setAiPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [editorKey, setEditorKey] = useState(0);
+
+  // Unsplash State
+  const [showUnsplashModal, setShowUnsplashModal] = useState(false);
+  const [unsplashQuery, setUnsplashQuery] = useState('');
+  const [unsplashImages, setUnsplashImages] = useState<any[]>([]);
+  const [unsplashLoading, setUnsplashLoading] = useState(false);
+  const [unsplashPage, setUnsplashPage] = useState(1);
+  const [unsplashTotalPages, setUnsplashTotalPages] = useState(0);
+  const [selectingImage, setSelectingImage] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     category_id: 1,
     title_en: '',
@@ -178,6 +187,58 @@ export default function ArticleForm() {
       showToast('Connection error while reaching AI', 'error');
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleUnsplashSearch = async (page = 1) => {
+    if (!unsplashQuery.trim()) return;
+    setUnsplashLoading(true);
+    try {
+      const res = await fetch(`/api/admin/unsplash?q=${encodeURIComponent(unsplashQuery)}&page=${page}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUnsplashImages(data.images);
+        setUnsplashPage(page);
+        setUnsplashTotalPages(data.total_pages);
+      } else {
+        showToast('Failed to search images', 'error');
+      }
+    } catch {
+      showToast('Error searching Unsplash', 'error');
+    } finally {
+      setUnsplashLoading(false);
+    }
+  };
+
+  const handleSelectUnsplashImage = async (img: any) => {
+    setSelectingImage(img.id);
+    try {
+      const imgRes = await fetch(img.url_regular);
+      const blob = await imgRes.blob();
+      
+      const fd = new FormData();
+      fd.append('image', blob, `unsplash-${img.id}.jpg`);
+      
+      const uploadRes = await fetch('/api/admin/upload', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: fd
+      });
+
+      if (uploadRes.ok) {
+        const { url } = await uploadRes.json();
+        setFormData(prev => ({ ...prev, image_url: url }));
+        showToast('Image added successfully!', 'success');
+        setShowUnsplashModal(false);
+      } else {
+        showToast('Failed to upload image', 'error');
+      }
+    } catch {
+      showToast('Error uploading image', 'error');
+    } finally {
+      setSelectingImage(null);
     }
   };
 
@@ -516,6 +577,21 @@ export default function ArticleForm() {
                         placeholder="https://..."
                       />
                     </div>
+
+                    <div className="flex items-center gap-4 my-5 opacity-60">
+                      <div className="h-px bg-zinc-300 flex-1"></div>
+                      <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">OR SEARCH</span>
+                      <div className="h-px bg-zinc-300 flex-1"></div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowUnsplashModal(true)}
+                      className="w-full flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-sky-500 to-blue-600 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-sky-500/25 transition-all hover:-translate-y-0.5 text-sm"
+                    >
+                      <Search className="w-4 h-4" />
+                      Search Unsplash Photos
+                    </button>
                   </div>
                   {formData.image_url && (
                     <div className="mt-5 rounded-xl overflow-hidden border border-zinc-200 relative group shadow-sm">
@@ -609,6 +685,122 @@ export default function ArticleForm() {
                   )}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Unsplash Search Modal */}
+      {showUnsplashModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/40 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-3xl max-h-[85vh] overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="p-6 bg-gradient-to-br from-sky-500/10 to-blue-500/5 relative">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-sky-500/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
+              <div className="flex justify-between items-start relative z-10">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-sky-500/30">
+                    <Search className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-black text-zinc-900 tracking-tight">Search Photos</h2>
+                    <p className="text-zinc-500 text-sm font-medium">Free high-quality images from Unsplash</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowUnsplashModal(false)} className="p-2 text-zinc-400 hover:text-zinc-700 bg-white/50 hover:bg-white rounded-full transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Search Bar */}
+            <div className="px-6 pt-5 pb-3">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                  <input
+                    type="text"
+                    value={unsplashQuery}
+                    onChange={e => setUnsplashQuery(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') handleUnsplashSearch(1); }}
+                    placeholder="Search for images... (e.g. technology, nature, city)"
+                    className="w-full pl-10 pr-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-sky-500/30 focus:border-sky-500 transition-all outline-none font-medium text-zinc-900 placeholder:text-zinc-400"
+                  />
+                </div>
+                <button
+                  onClick={() => handleUnsplashSearch(1)}
+                  disabled={unsplashLoading || !unsplashQuery.trim()}
+                  className="px-6 py-3 bg-gradient-to-r from-sky-500 to-blue-600 text-white font-bold rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {unsplashLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Search'}
+                </button>
+              </div>
+            </div>
+
+            {/* Image Grid */}
+            <div className="flex-1 overflow-y-auto p-6 pt-3">
+              {unsplashImages.length === 0 && !unsplashLoading && (
+                <div className="flex flex-col items-center justify-center py-16 text-zinc-400">
+                  <ImageIcon className="w-12 h-12 mb-3 opacity-30" />
+                  <p className="font-bold text-sm">Search for beautiful images</p>
+                  <p className="text-xs">Results will appear here</p>
+                </div>
+              )}
+
+              {unsplashLoading && (
+                <div className="flex items-center justify-center py-16">
+                  <Loader2 className="w-8 h-8 animate-spin text-sky-500" />
+                </div>
+              )}
+
+              {!unsplashLoading && unsplashImages.length > 0 && (
+                <>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {unsplashImages.map((img: any) => (
+                      <div
+                        key={img.id}
+                        className="relative group rounded-xl overflow-hidden border border-zinc-200 cursor-pointer hover:border-sky-400 hover:shadow-lg hover:shadow-sky-500/10 transition-all"
+                        onClick={() => !selectingImage && handleSelectUnsplashImage(img)}
+                      >
+                        <img src={img.url_small} alt={img.alt} className="w-full h-32 object-cover" />
+                        
+                        {/* Overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                          <span className="text-white text-[10px] font-bold truncate w-full">📸 {img.author}</span>
+                        </div>
+
+                        {/* Loading overlay for selected image */}
+                        {selectingImage === img.id && (
+                          <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center">
+                            <Loader2 className="w-6 h-6 animate-spin text-sky-500" />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Pagination */}
+                  {unsplashTotalPages > 1 && (
+                    <div className="flex items-center justify-center gap-3 mt-5 pt-4 border-t border-zinc-100">
+                      <button
+                        onClick={() => handleUnsplashSearch(unsplashPage - 1)}
+                        disabled={unsplashPage <= 1 || unsplashLoading}
+                        className="px-4 py-2 text-sm font-bold rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      >
+                        ← Previous
+                      </button>
+                      <span className="text-sm text-zinc-500 font-medium">Page {unsplashPage} of {unsplashTotalPages}</span>
+                      <button
+                        onClick={() => handleUnsplashSearch(unsplashPage + 1)}
+                        disabled={unsplashPage >= unsplashTotalPages || unsplashLoading}
+                        className="px-4 py-2 text-sm font-bold rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      >
+                        Next →
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           </div>
         </div>
