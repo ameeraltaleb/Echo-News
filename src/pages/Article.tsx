@@ -79,6 +79,38 @@ export default function Article() {
       let ogUrl = document.querySelector('meta[property="og:url"]');
       if (!ogUrl) { ogUrl = document.createElement('meta'); ogUrl.setAttribute('property', 'og:url'); document.head.appendChild(ogUrl); }
       ogUrl.setAttribute('content', window.location.href);
+
+      // JSON-LD Structured Data for rich Google results
+      let jsonLd = document.querySelector('script[type="application/ld+json"]');
+      if (!jsonLd) {
+        jsonLd = document.createElement('script');
+        jsonLd.setAttribute('type', 'application/ld+json');
+        document.head.appendChild(jsonLd);
+      }
+      const siteNameLd = import.meta.env.VITE_SITE_NAME || 'Echo News';
+      jsonLd.textContent = JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "NewsArticle",
+        "headline": article.title,
+        "image": article.image_url ? [article.image_url] : [],
+        "datePublished": article.published_at,
+        "dateModified": article.published_at,
+        "author": {
+          "@type": "Person",
+          "name": article.author || siteNameLd
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": siteNameLd,
+          "url": window.location.origin
+        },
+        "mainEntityOfPage": {
+          "@type": "WebPage",
+          "@id": window.location.href
+        },
+        "articleSection": article.category_slug,
+        "url": window.location.href
+      });
     }
   }, [article]);
 
