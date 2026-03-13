@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { Save, X, ArrowLeft, Image as ImageIcon, Globe, Upload, Loader2 } from 'lucide-react';
+import { Save, X, ArrowLeft, Image as ImageIcon, Globe, Upload, Loader2, Sparkles, MessageSquare } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import RichTextEditor from '../components/RichTextEditor';
 
@@ -21,6 +21,11 @@ export default function ArticleForm() {
   const [loading, setLoading] = useState(isEdit);
   const [uploading, setUploading] = useState(false);
   const [tagInput, setTagInput] = useState('');
+  
+  // AI State
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
   const [formData, setFormData] = useState({
     category_id: 1,
     title_en: '',
@@ -131,6 +136,49 @@ export default function ArticleForm() {
     }
   };
 
+  const handleAiGenerate = async () => {
+    if (!aiPrompt.trim()) {
+      showToast('Please enter a prompt for the AI', 'error');
+      return;
+    }
+    
+    setIsGenerating(true);
+    try {
+      const res = await fetch('/api/admin/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ prompt: aiPrompt })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setFormData(prev => ({
+          ...prev,
+          title_en: data.title_en || prev.title_en,
+          title_ar: data.title_ar || prev.title_ar,
+          summary_en: data.summary_en || prev.summary_en,
+          summary_ar: data.summary_ar || prev.summary_ar,
+          content_en: data.content_en || prev.content_en,
+          content_ar: data.content_ar || prev.content_ar,
+          tags: Array.isArray(data.tags) ? [...new Set([...prev.tags, ...data.tags])] : prev.tags
+        }));
+        showToast('Article generated successfully!', 'success');
+        setShowAiModal(false);
+        setAiPrompt('');
+      } else {
+        const errData = await res.json();
+        showToast(errData.error || 'Failed to generate article', 'error');
+      }
+    } catch (err) {
+      showToast('Connection error while reaching AI', 'error');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -180,6 +228,13 @@ export default function ArticleForm() {
               className="px-6 py-2.5 rounded-xl font-bold text-zinc-600 bg-white border border-zinc-200 hover:bg-zinc-50 transition-all shadow-sm"
             >
               Cancel
+            </button>
+            <button
+              onClick={() => setShowAiModal(true)}
+              className="flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-6 py-2.5 rounded-xl font-bold hover:shadow-lg hover:shadow-indigo-500/25 transition-all hover:-translate-y-0.5"
+            >
+              <Sparkles className="w-5 h-5" />
+              AI Assistant
             </button>
             <button 
               onClick={handleSubmit}
@@ -479,6 +534,83 @@ export default function ArticleForm() {
           </div>
         </form>
       </div>
+
+      {/* AI Assistant Modal */}
+      {showAiModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/40 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="p-6 md:p-8 bg-gradient-to-br from-indigo-500/10 to-purple-500/5 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
+              
+              <div className="flex justify-between items-start mb-2 relative z-10">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-black text-zinc-900 tracking-tight">AI Assistant</h2>
+                    <p className="text-zinc-500 text-sm font-medium">Auto-generate a complete dual-language article</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setShowAiModal(false)}
+                  className="p-2 text-zinc-400 hover:text-zinc-700 bg-white/50 hover:bg-white rounded-full transition-colors"
+                  disabled={isGenerating}
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 md:p-8 space-y-5">
+              <div>
+                <label className="block text-sm font-bold text-zinc-700 mb-2 flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4 text-indigo-500" />
+                  What should this article be about?
+                </label>
+                <textarea 
+                  value={aiPrompt}
+                  onChange={(e) => setAiPrompt(e.target.value)}
+                  placeholder="e.g. Write a breaking news report about Apple releasing a new VR headset... (Be as specific as you want)"
+                  rows={4}
+                  className="w-full p-4 bg-zinc-50 border border-zinc-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition-all outline-none resize-none font-medium text-zinc-900 placeholder:text-zinc-400"
+                  disabled={isGenerating}
+                />
+                <p className="text-xs text-zinc-500 font-medium mt-2 flex items-center justify-between">
+                  <span>Generates titles, summary, content (EN & AR), and tags.</span>
+                </p>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button 
+                  onClick={() => setShowAiModal(false)}
+                  className="flex-1 py-3 px-4 rounded-xl font-bold text-zinc-600 bg-zinc-100 hover:bg-zinc-200 transition-colors"
+                  disabled={isGenerating}
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleAiGenerate}
+                  disabled={isGenerating || !aiPrompt.trim()}
+                  className="flex-[2] py-3 px-4 rounded-xl font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 transition-all shadow-lg shadow-indigo-500/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Generating Magic...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-5 h-5" />
+                      Generate Article
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
