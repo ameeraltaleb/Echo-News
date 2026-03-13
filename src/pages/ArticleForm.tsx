@@ -157,70 +157,78 @@ export default function ArticleForm() {
     }
   };
 
-  if (loading) return <div className="p-8 text-center">Loading...</div>;
+  if (loading) return <div className="p-8 text-center flex items-center justify-center min-h-screen text-zinc-500"><Loader2 className="w-8 h-8 animate-spin" /></div>;
 
   return (
-    <div className="min-h-screen bg-zinc-50 p-8">
-      <div className="max-w-5xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
+    <div className="min-h-screen bg-zinc-50/50 p-4 md:p-8 font-sans">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
           <div className="flex items-center gap-4">
-            <Link to="/admin" className="p-2 hover:bg-zinc-200 rounded-full transition-colors">
-              <ArrowLeft className="w-6 h-6 text-zinc-600" />
+            <Link to="/admin" className="p-3 bg-white border border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50 text-zinc-600 rounded-xl transition-all shadow-sm">
+              <ArrowLeft className="w-5 h-5" />
             </Link>
-            <h1 className="text-3xl font-bold text-zinc-900">
-              {isEdit ? 'Edit Article' : 'Create New Article'}
-            </h1>
+            <div>
+              <h1 className="text-3xl md:text-4xl font-black text-zinc-900 tracking-tight">
+                {isEdit ? 'Edit Article' : 'New Article'}
+              </h1>
+              <p className="text-zinc-500 text-sm mt-1 font-medium">Craft your story and publish it to the world.</p>
+            </div>
           </div>
-          <div className="flex gap-3">
+          <div className="flex items-center gap-3">
             <button 
               onClick={() => navigate('/admin')}
-              className="px-6 py-2.5 rounded-lg font-bold text-zinc-600 hover:bg-zinc-200 transition-colors"
+              className="px-6 py-2.5 rounded-xl font-bold text-zinc-600 bg-white border border-zinc-200 hover:bg-zinc-50 transition-all shadow-sm"
             >
               Cancel
             </button>
             <button 
               onClick={handleSubmit}
-              className="flex items-center gap-2 bg-primary text-white px-8 py-2.5 rounded-lg font-bold hover:opacity-90 transition-colors shadow-lg shadow-primary/10"
+              className="flex items-center gap-2 bg-zinc-900 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-black transition-all shadow-md hover:shadow-xl hover:-translate-y-0.5"
             >
               <Save className="w-5 h-5" />
-              Save Article
+              {isEdit ? 'Update' : 'Publish'}
             </button>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Main Content Fields */}
-          <div className="lg:col-span-3 space-y-6">
+          <div className="lg:col-span-8 space-y-6">
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* English Content */}
-              <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-sm">
-                <div className="flex items-center gap-2 mb-4 text-zinc-400">
-                  <Globe className="w-4 h-4" />
-                  <span className="text-xs font-bold uppercase tracking-wider">English Content</span>
+            {/* English Content */}
+            <div className="bg-white p-6 md:p-8 rounded-2xl border border-zinc-200 shadow-sm relative overflow-hidden group">
+              <div className="absolute top-0 left-0 w-1 p-0 h-full bg-blue-500 opacity-50 group-hover:opacity-100 transition-opacity"></div>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
+                  <Globe className="w-5 h-5" />
                 </div>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-bold text-zinc-700 mb-1">Title (EN)</label>
-                    <input 
-                      type="text"
-                      value={formData.title_en}
-                      onChange={e => setFormData({...formData, title_en: e.target.value})}
-                      className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-zinc-700 mb-1">Summary (EN)</label>
-                    <textarea 
-                      rows={3}
-                      value={formData.summary_en}
-                      onChange={e => setFormData({...formData, summary_en: e.target.value})}
-                      className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-primary outline-none resize-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-zinc-700 mb-1">Content (EN)</label>
+                <h2 className="text-xl font-bold text-zinc-900 tracking-tight">English Version</h2>
+              </div>
+              <div className="space-y-5">
+                <div>
+                  <label className="block text-sm font-bold text-zinc-700 mb-1.5">Article Title</label>
+                  <input 
+                    type="text"
+                    value={formData.title_en}
+                    onChange={e => setFormData({...formData, title_en: e.target.value})}
+                    className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none font-medium text-zinc-900 placeholder:text-zinc-400"
+                    placeholder="Enter an engaging title..."
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-zinc-700 mb-1.5">Short Summary</label>
+                  <textarea 
+                    rows={2}
+                    value={formData.summary_en}
+                    onChange={e => setFormData({...formData, summary_en: e.target.value})}
+                    className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none resize-none font-medium text-zinc-900 placeholder:text-zinc-400"
+                    placeholder="A brief overview of the article..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-zinc-700 mb-1.5">Full Content</label>
+                  <div className="border border-zinc-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all">
                     <RichTextEditor 
                       value={formData.content_en}
                       onChange={value => setFormData({...formData, content_en: value})}
@@ -229,35 +237,42 @@ export default function ArticleForm() {
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Arabic Content */}
-              <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-sm" dir="rtl">
-                <div className="flex items-center gap-2 mb-4 text-zinc-400">
-                  <Globe className="w-4 h-4" />
-                  <span className="text-xs font-bold uppercase tracking-wider">المحتوى العربي</span>
+            {/* Arabic Content */}
+            <div className="bg-white p-6 md:p-8 rounded-2xl border border-zinc-200 shadow-sm relative overflow-hidden group" dir="rtl">
+              <div className="absolute top-0 right-0 w-1 p-0 h-full bg-emerald-500 opacity-50 group-hover:opacity-100 transition-opacity"></div>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl">
+                  <Globe className="w-5 h-5" />
                 </div>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-bold text-zinc-700 mb-1">العنوان (AR)</label>
-                    <input 
-                      type="text"
-                      value={formData.title_ar}
-                      onChange={e => setFormData({...formData, title_ar: e.target.value})}
-                      className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-primary outline-none font-arabic"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-zinc-700 mb-1">الملخص (AR)</label>
-                    <textarea 
-                      rows={3}
-                      value={formData.summary_ar}
-                      onChange={e => setFormData({...formData, summary_ar: e.target.value})}
-                      className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-primary outline-none font-arabic resize-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-zinc-700 mb-1">المحتوى (AR)</label>
+                <h2 className="text-xl font-bold text-zinc-900 tracking-tight font-arabic">النسخة العربية</h2>
+              </div>
+              <div className="space-y-5">
+                <div>
+                  <label className="block text-sm font-bold text-zinc-700 mb-1.5 font-arabic">عنوان المقال</label>
+                  <input 
+                    type="text"
+                    value={formData.title_ar}
+                    onChange={e => setFormData({...formData, title_ar: e.target.value})}
+                    className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none font-medium text-zinc-900 placeholder:text-zinc-400 font-arabic text-right"
+                    placeholder="أدخل عنواناً جذاباً..."
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-zinc-700 mb-1.5 font-arabic">ملخص قصير</label>
+                  <textarea 
+                    rows={2}
+                    value={formData.summary_ar}
+                    onChange={e => setFormData({...formData, summary_ar: e.target.value})}
+                    className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none resize-none font-medium text-zinc-900 placeholder:text-zinc-400 font-arabic text-right"
+                    placeholder="نبذة مختصرة عن محتوى المقال..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-zinc-700 mb-1.5 font-arabic">المحتوى الكامل</label>
+                  <div className="border border-zinc-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500 transition-all">
                     <RichTextEditor 
                       value={formData.content_ar}
                       onChange={value => setFormData({...formData, content_ar: value})}
@@ -271,186 +286,195 @@ export default function ArticleForm() {
           </div>
 
           {/* Sidebar Settings */}
-          <div className="space-y-6 lg:col-span-1">
-            <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-sm">
-              <h3 className="text-lg font-bold text-zinc-900 mb-4">Article Settings</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-bold text-zinc-700 mb-1">Category</label>
-                  <select 
-                    value={formData.category_id}
-                    onChange={e => setFormData({...formData, category_id: parseInt(e.target.value)})}
-                    className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
-                  >
-                    {(categories || []).map(cat => (
-                      <option key={cat.id} value={cat.id}>{cat.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-zinc-700 mb-1">Author Name</label>
-                  <input 
-                    type="text"
-                    value={formData.author}
-                    onChange={e => setFormData({...formData, author: e.target.value})}
-                    className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
-                    placeholder="e.g. John Doe"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-zinc-700 mb-1">Status</label>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setFormData({...formData, status: 'published'})}
-                      className={`flex-1 py-2 rounded-lg font-bold text-sm transition-all ${
-                        formData.status === 'published'
-                          ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/20'
-                          : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'
-                      }`}
+          <div className="lg:col-span-4">
+            <div className="sticky top-8 space-y-6">
+              
+              {/* Settings Card */}
+              <div className="bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm">
+                <h3 className="text-lg font-black text-zinc-900 mb-5 tracking-tight">Organization</h3>
+                <div className="space-y-5">
+                  <div>
+                    <label className="block text-sm font-bold text-zinc-700 mb-1.5">Category</label>
+                    <select 
+                      value={formData.category_id}
+                      onChange={e => setFormData({...formData, category_id: parseInt(e.target.value)})}
+                      className="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none font-medium cursor-pointer"
                     >
-                      Published
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setFormData({...formData, status: 'draft'})}
-                      className={`flex-1 py-2 rounded-lg font-bold text-sm transition-all ${
-                        formData.status === 'draft'
-                          ? 'bg-zinc-600 text-white shadow-lg shadow-zinc-900/20'
-                          : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'
-                      }`}
-                    >
-                      Draft
-                    </button>
+                      {(categories || []).map(cat => (
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                      ))}
+                    </select>
                   </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-zinc-700 mb-1">Publish Date & Time</label>
-                  <input 
-                    type="datetime-local"
-                    value={formData.published_at}
-                    onChange={e => setFormData({...formData, published_at: e.target.value})}
-                    className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
-                  />
-                  <p className="text-xs text-zinc-500 mt-1">Set a future date to schedule publishing.</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-zinc-700 mb-1">Tags</label>
-                  <div className="flex gap-2 mb-2">
+                  
+                  <div>
+                    <label className="block text-sm font-bold text-zinc-700 mb-1.5">Author</label>
                     <input 
                       type="text"
-                      value={tagInput}
-                      onChange={e => setTagInput(e.target.value)}
-                      onKeyDown={e => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
+                      value={formData.author}
+                      onChange={e => setFormData({...formData, author: e.target.value})}
+                      className="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none font-medium"
+                      placeholder="e.g. John Doe"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-zinc-700 mb-2">Publish Status</label>
+                    <div className="flex gap-2 p-1 bg-zinc-100 rounded-xl">
+                      <button
+                        type="button"
+                        onClick={() => setFormData({...formData, status: 'published'})}
+                        className={`flex-1 py-2 rounded-lg font-bold text-sm transition-all ${
+                          formData.status === 'published'
+                            ? 'bg-white text-emerald-600 shadow-sm border border-zinc-200/50'
+                            : 'text-zinc-500 hover:text-zinc-700'
+                        }`}
+                      >
+                        Published
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setFormData({...formData, status: 'draft'})}
+                        className={`flex-1 py-2 rounded-lg font-bold text-sm transition-all ${
+                          formData.status === 'draft'
+                            ? 'bg-white text-zinc-900 shadow-sm border border-zinc-200/50'
+                            : 'text-zinc-500 hover:text-zinc-700'
+                        }`}
+                      >
+                        Draft
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-zinc-700 mb-1.5">Publish Date</label>
+                    <input 
+                      type="datetime-local"
+                      value={formData.published_at}
+                      onChange={e => setFormData({...formData, published_at: e.target.value})}
+                      className="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none font-medium text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-zinc-700 mb-1.5">Tags</label>
+                    <div className="flex gap-2 mb-3">
+                      <input 
+                        type="text"
+                        value={tagInput}
+                        onChange={e => setTagInput(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
+                              setFormData({...formData, tags: [...formData.tags, tagInput.trim()]});
+                              setTagInput('');
+                            }
+                          }
+                        }}
+                        className="flex-1 px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none text-sm"
+                        placeholder="Add tag..."
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
                           if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
                             setFormData({...formData, tags: [...formData.tags, tagInput.trim()]});
                             setTagInput('');
                           }
-                        }
-                      }}
-                      className="flex-1 px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
-                      placeholder="Add a tag and press Enter"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
-                          setFormData({...formData, tags: [...formData.tags, tagInput.trim()]});
-                          setTagInput('');
-                        }
-                      }}
-                      className="px-4 py-2 bg-zinc-100 text-zinc-700 font-bold rounded-lg hover:bg-zinc-200"
-                    >
-                      Add
-                    </button>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {(formData.tags || []).map(tag => (
-                      <span key={tag} className="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary text-sm font-medium rounded-full">
-                        {tag}
-                        <button
-                          type="button"
-                          onClick={() => setFormData({...formData, tags: (formData.tags || []).filter(t => t !== tag)})}
-                          className="hover:text-red-500 transition-colors"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </span>
-                    ))}
+                        }}
+                        className="px-4 py-2.5 bg-zinc-900 text-white text-sm font-bold rounded-xl hover:bg-black transition-colors shadow-sm"
+                      >
+                        Add
+                      </button>
+                    </div>
+                    {formData.tags && formData.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-2 p-3 bg-zinc-50 rounded-xl border border-zinc-100">
+                        {formData.tags.map(tag => (
+                          <span key={tag} className="inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-zinc-200 text-zinc-700 text-xs font-bold rounded-lg shadow-sm">
+                            {tag}
+                            <button
+                              type="button"
+                              onClick={() => setFormData({...formData, tags: (formData.tags || []).filter(t => t !== tag)})}
+                              className="text-zinc-400 hover:text-red-500 transition-colors bg-zinc-50 hover:bg-red-50 p-0.5 rounded-md"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-sm">
-              <h3 className="text-lg font-bold text-zinc-900 mb-4">Media</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-bold text-zinc-700 mb-2">Cover Image</label>
-                  
-                  {/* Upload Area */}
-                  <div 
-                    className="border-2 border-dashed border-zinc-300 rounded-xl p-6 flex flex-col items-center justify-center text-center hover:bg-zinc-50 hover:border-primary transition-colors cursor-pointer relative"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <input 
-                      type="file" 
-                      ref={fileInputRef}
-                      onChange={handleImageUpload}
-                      accept="image/*"
-                      className="hidden"
-                    />
+              {/* Media Card */}
+              <div className="bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm">
+                <h3 className="text-lg font-black text-zinc-900 mb-5 tracking-tight">Media</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-bold text-zinc-700 mb-3">Featured Image</label>
                     
-                    {uploading ? (
-                      <div className="flex flex-col items-center text-zinc-500">
-                        <Loader2 className="w-8 h-8 mb-2 animate-spin text-primary" />
-                        <span className="text-sm font-medium">Uploading image...</span>
-                      </div>
-                    ) : (
-                      <>
-                        <div className="w-12 h-12 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-3">
-                          <Upload className="w-6 h-6" />
+                    {/* Upload Area */}
+                    <div 
+                      className="border-2 border-dashed border-zinc-300 rounded-2xl p-6 flex flex-col items-center justify-center text-center hover:bg-zinc-50 hover:border-zinc-400 transition-all cursor-pointer group"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <input 
+                        type="file" 
+                        ref={fileInputRef}
+                        onChange={handleImageUpload}
+                        accept="image/*"
+                        className="hidden"
+                      />
+                      
+                      {uploading ? (
+                        <div className="flex flex-col items-center text-zinc-500 py-4">
+                          <Loader2 className="w-8 h-8 mb-3 animate-spin text-zinc-400" />
+                          <span className="text-sm font-bold">Uploading...</span>
                         </div>
-                        <p className="text-sm font-bold text-zinc-900 mb-1">Click to upload image</p>
-                        <p className="text-xs text-zinc-500">PNG, JPG, WEBP up to 5MB</p>
-                      </>
-                    )}
-                  </div>
+                      ) : (
+                        <>
+                          <div className="w-12 h-12 bg-zinc-100 text-zinc-500 group-hover:bg-white group-hover:text-zinc-800 rounded-full flex items-center justify-center mb-3 transition-colors shadow-sm border border-zinc-200/50">
+                            <Upload className="w-5 h-5" />
+                          </div>
+                          <p className="text-sm font-bold text-zinc-900 mb-1">Upload Image</p>
+                          <p className="text-xs text-zinc-500 font-medium">PNG, JPG, WEBP up to 5MB</p>
+                        </>
+                      )}
+                    </div>
 
-                  <div className="flex items-center gap-4 my-4">
-                    <div className="h-px bg-zinc-200 flex-1"></div>
-                    <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">OR</span>
-                    <div className="h-px bg-zinc-200 flex-1"></div>
-                  </div>
+                    <div className="flex items-center gap-4 my-5 opacity-60">
+                      <div className="h-px bg-zinc-300 flex-1"></div>
+                      <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">OR PASTE URL</span>
+                      <div className="h-px bg-zinc-300 flex-1"></div>
+                    </div>
 
-                  <div className="flex gap-2">
-                    <div className="flex-grow relative">
-                      <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                    <div className="relative">
+                      <ImageIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
                       <input 
                         type="url"
                         value={formData.image_url}
                         onChange={e => setFormData({...formData, image_url: e.target.value})}
-                        className="w-full pl-10 pr-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-primary outline-none text-sm"
-                        placeholder="Paste image URL here..."
+                        className="w-full pl-10 pr-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none text-sm font-medium"
+                        placeholder="https://..."
                       />
                     </div>
                   </div>
+                  {formData.image_url && (
+                    <div className="mt-5 rounded-xl overflow-hidden border border-zinc-200 relative group shadow-sm">
+                      <img src={formData.image_url} alt="Preview" className="w-full h-auto object-cover max-h-48" />
+                      <button
+                        type="button"
+                        onClick={() => setFormData({...formData, image_url: ''})}
+                        className="absolute top-2 right-2 bg-white/90 backdrop-blur text-zinc-800 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-red-50 hover:text-red-600 shadow-sm"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
                 </div>
-                {formData.image_url && (
-                  <div className="mt-4 rounded-lg overflow-hidden border border-zinc-200 relative group">
-                    <img src={formData.image_url} alt="Preview" className="w-full h-auto object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => setFormData({...formData, image_url: ''})}
-                      className="absolute top-2 right-2 bg-black/50 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                )}
               </div>
+
             </div>
           </div>
         </form>
