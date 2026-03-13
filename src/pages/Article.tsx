@@ -54,6 +54,34 @@ export default function Article() {
     window.scrollTo(0, 0);
   }, [id, language]);
 
+  useEffect(() => {
+    if (article) {
+      const siteName = import.meta.env.VITE_SITE_NAME || 'Echo News';
+      document.title = `${article.title} | ${siteName}`;
+      
+      let metaDesc = document.querySelector('meta[name="description"]');
+      if (!metaDesc) {
+        metaDesc = document.createElement('meta');
+        metaDesc.setAttribute('name', 'description');
+        document.head.appendChild(metaDesc);
+      }
+      metaDesc.setAttribute('content', article.title); 
+
+      // OpenGraph
+      let ogTitle = document.querySelector('meta[property="og:title"]');
+      if (!ogTitle) { ogTitle = document.createElement('meta'); ogTitle.setAttribute('property', 'og:title'); document.head.appendChild(ogTitle); }
+      ogTitle.setAttribute('content', article.title);
+
+      let ogImage = document.querySelector('meta[property="og:image"]');
+      if (!ogImage) { ogImage = document.createElement('meta'); ogImage.setAttribute('property', 'og:image'); document.head.appendChild(ogImage); }
+      ogImage.setAttribute('content', article.image_url || '');
+      
+      let ogUrl = document.querySelector('meta[property="og:url"]');
+      if (!ogUrl) { ogUrl = document.createElement('meta'); ogUrl.setAttribute('property', 'og:url'); document.head.appendChild(ogUrl); }
+      ogUrl.setAttribute('content', window.location.href);
+    }
+  }, [article]);
+
   if (loading) {
     return <ArticleDetailSkeleton />;
   }

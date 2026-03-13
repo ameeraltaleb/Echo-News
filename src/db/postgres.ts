@@ -13,8 +13,9 @@ export function getSql() {
         ? { rejectUnauthorized: false } 
         : (process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false),
       connect_timeout: 10,
-      idle_timeout: 20,
+      idle_timeout: 10,
       max_lifetime: 60 * 30,
+      max: 1, // Crucial for Vercel serverless functions to avoid connection exhaustion
     });
   }
   return sqlInstance;

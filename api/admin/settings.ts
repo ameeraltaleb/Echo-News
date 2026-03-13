@@ -1,14 +1,13 @@
 import { getSql, initPostgresDb } from '../../src/db/postgres.js';
-
-const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'echo-news-secret-2026';
+import { verifyAuthHeader } from '../_lib/auth.js';
 
 async function ensureDb() {
   await initPostgresDb();
 }
 
 export default async function handler(req, res) {
-  const authHeader = req.headers.authorization;
-  if (authHeader !== `Bearer ${ADMIN_TOKEN}`) {
+  const payload = await verifyAuthHeader(req.headers.authorization);
+  if (!payload || payload.role !== 'admin') {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 

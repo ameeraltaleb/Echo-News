@@ -1,26 +1,65 @@
+import multer from 'multer';
+import { verifyAuthHeader } from '../_lib/auth.js';
+import { supabase } from '../_lib/supabase.js';
 
-export default async function handler(req, res) {
-  const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'echo-news-secret-2026';
-  const authHeader = req.headers.authorization;
-  
-  if (authHeader !== `Bearer ${ADMIN_TOKEN}`) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
+// Disable default Vercel body parser to handle multipart/form-data stream manually
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
 
+const upload = multer({ storage: multer.memoryStorage() });
+
+function runMiddleware(req: any, res: any, fn: any) {
+  return new Promise((resolve, reject) => {
+    fn(req, res, (result: any) => {
+      if (result instanceof Error) return reject(result);
+      return resolve(result);
+    });
+  });
+}
+
+export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // In a real app, we would use formidable/multer to handle the file upload
-  // and store it in Supabase Storage, Cloudinary, or S3.
-  // For this demo environment, we'll return a random high-quality image URL
-  // to simulate a successful upload.
-  
-  const randomId = Math.floor(Math.random() * 1000);
-  const mockUrl = `https://picsum.photos/seed/${randomId}/1200/800`;
+  try {
+    const payload = await verifyAuthHeader(req.headers.authorization);
+    if (!payload || payload.role !== 'admin') {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
 
-  // Simulate a small delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
+    await runMiddleware(req, res, upload.single('file')); // Most editors send the image via 'file' field or 'image' field
 
-  res.json({ url: mockUrl });
+    const file = req.file;
+    if (!file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const fileExt = file.originalname.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+    
+    const { error } = await supabase.storage
+      .from('images') // Assumes the user created an 'images' public bucket in Supabase
+      .upload(`public/${fileName}`, file.buffer, {
+        contentType: file.mimetype,
+        upsert: false,
+      });
+
+    if (error) {
+      console.error('Supabase upload error:', error);
+      return res.status(500).json({ error: `Supabase Error: ${error.message}` });
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('images')
+      .getPublicUrl(`public/${fileName}`);
+
+    res.json({ url: publicUrl });
+  } catch (err: any) {
+    console.error('Upload handler error:', err);
+    res.status(500).json({ error: 'Internal server error during upload.' });
+  }
 }
