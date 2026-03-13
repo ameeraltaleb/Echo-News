@@ -26,6 +26,7 @@ export default function ArticleForm() {
   const [showAiModal, setShowAiModal] = useState(false);
   const [aiPrompt, setAiPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [editorKey, setEditorKey] = useState(0);
   const [formData, setFormData] = useState({
     category_id: 1,
     title_en: '',
@@ -165,6 +166,7 @@ export default function ArticleForm() {
           content_ar: data.content_ar || prev.content_ar,
           tags: Array.isArray(data.tags) ? [...new Set([...prev.tags, ...data.tags])] : prev.tags
         }));
+        setEditorKey(prev => prev + 1);
         showToast('Article generated successfully!', 'success');
         setShowAiModal(false);
         setAiPrompt('');
@@ -283,7 +285,7 @@ export default function ArticleForm() {
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-zinc-700 mb-1.5">Full Content</label>
-                  <div className="border border-zinc-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all">
+                  <div key={`editor-en-${editorKey}`} className="border border-zinc-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all">
                     <RichTextEditor 
                       value={formData.content_en}
                       onChange={value => setFormData({...formData, content_en: value})}
@@ -327,7 +329,7 @@ export default function ArticleForm() {
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-zinc-700 mb-1.5 font-arabic">المحتوى الكامل</label>
-                  <div className="border border-zinc-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500 transition-all">
+                  <div key={`editor-ar-${editorKey}`} className="border border-zinc-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500 transition-all">
                     <RichTextEditor 
                       value={formData.content_ar}
                       onChange={value => setFormData({...formData, content_ar: value})}
