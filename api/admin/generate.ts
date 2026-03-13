@@ -25,7 +25,7 @@ Rules:
 1. DO NOT wrap the JSON in markdown code blocks like \`\`\`json. Return ONLY the raw JSON string.
 2. The HTML in content_en and content_ar should be clean and not include <html>, <head>, or <body> tags. Just the interior content suitable for a rich text editor.
 3. Keep the tone objective and journalistic.
-4. Ensure accurate and natural translation between Arabic and English.
+4. Language boundary is STRICT: The '_en' fields MUST be written entirely in English. The '_ar' fields MUST be written entirely in Arabic. Even if the user's prompt is in Arabic, translate the ideas and write the '_en' fields in English!
 `;
 
 export default async function handler(req: any, res: any) {
@@ -57,6 +57,7 @@ export default async function handler(req: any, res: any) {
       config: {
         systemInstruction: SYSTEM_PROMPT,
         temperature: 0.7, // Good balance of creativity and structure
+        responseMimeType: 'application/json',
       }
     });
 
