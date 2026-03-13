@@ -19,7 +19,14 @@ export default async function handler(req, res) {
     const sql = getSql();
 
     if (req.method === 'GET') {
-      const settings = await sql`SELECT key, value FROM settings`;
+      const settingsRecords = await sql`SELECT key, value FROM settings`;
+      
+      // Convert to simple key-value object for the frontend
+      const settings = settingsRecords.reduce((acc: any, row: any) => {
+        acc[row.key] = row.value;
+        return acc;
+      }, {});
+
       res.json(settings);
     } else if (req.method === 'POST') {
       const settings = req.body;
