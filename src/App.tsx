@@ -10,14 +10,14 @@ import { ThemeProvider } from './context/ThemeContext';
 import { SettingsProvider } from './context/SettingsContext';
 import Layout from './components/Layout';
 import { ToastProvider } from './components/Toast';
-import Home from './pages/Home';
-import Article from './pages/Article';
-import Category from './pages/Category';
-import Search from './pages/Search';
-import StaticPage from './pages/StaticPage';
-import AdminDashboard from './pages/AdminDashboard';
-import ArticleForm from './pages/ArticleForm';
-import Maintenance from './pages/Maintenance';
+const Home = React.lazy(() => import('./pages/Home'));
+const Article = React.lazy(() => import('./pages/Article'));
+const Category = React.lazy(() => import('./pages/Category'));
+const Search = React.lazy(() => import('./pages/Search'));
+const StaticPage = React.lazy(() => import('./pages/StaticPage'));
+const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
+const ArticleForm = React.lazy(() => import('./pages/ArticleForm'));
+const Maintenance = React.lazy(() => import('./pages/Maintenance'));
 import { useSettings } from './context/SettingsContext';
 
 function AppRouter() {
@@ -94,21 +94,23 @@ function AppRouter() {
 
   return (
     <BrowserRouter>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Home />} />
-          <Route path="article/:id" element={<Article />} />
-          <Route path="category/:slug" element={<Category />} />
-          <Route path="search" element={<Search />} />
-          <Route path="page/:slug" element={<StaticPage />} />
-        </Route>
+      <React.Suspense fallback={<div className="flex w-full items-center justify-center p-20"><div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>}>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Home />} />
+            <Route path="article/:id" element={<Article />} />
+            <Route path="category/:slug" element={<Category />} />
+            <Route path="search" element={<Search />} />
+            <Route path="page/:slug" element={<StaticPage />} />
+          </Route>
 
-        {/* Admin Routes (Hidden) */}
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/new" element={<ArticleForm />} />
-        <Route path="/admin/edit/:id" element={<ArticleForm />} />
-      </Routes>
+          {/* Admin Routes (Hidden) */}
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/new" element={<ArticleForm />} />
+          <Route path="/admin/edit/:id" element={<ArticleForm />} />
+        </Routes>
+      </React.Suspense>
     </BrowserRouter>
   );
 }
