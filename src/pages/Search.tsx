@@ -23,6 +23,9 @@ export default function Search() {
   const { language, t } = useLanguage();
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const limit = 20;
 
   useEffect(() => {
     const fetchResults = async () => {
@@ -33,14 +36,17 @@ export default function Search() {
       }
 
       setLoading(true);
+      setHasMore(true);
       try {
-        const res = await fetch(`/api/articles?lang=${language}&q=${encodeURIComponent(query)}&limit=50`);
+        const res = await fetch(`/api/articles?lang=${language}&q=${encodeURIComponent(query)}&limit=${limit}&offset=0`);
         const data = await res.json();
         if (Array.isArray(data)) {
           setArticles(data);
+          if (data.length < limit) setHasMore(false);
         } else {
           console.error('API returned non-array data:', data);
           setArticles([]);
+          setHasMore(false);
         }
       } catch (error) {
         console.error('Failed to fetch search results', error);
@@ -51,6 +57,27 @@ export default function Search() {
 
     fetchResults();
   }, [query, language]);
+
+  const loadMore = async () => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    try {
+      const res = await fetch(`/api/articles?lang=${language}&q=${encodeURIComponent(query)}&limit=${limit}&offset=${articles.length}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          if (data.length < limit) {
+            setHasMore(false);
+          }
+          setArticles(prev => [...prev, ...data]);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load more search results', err);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const formatDate = (dateString: string) => {
     return formatDistanceToNow(new Date(dateString), {
@@ -163,6 +190,21 @@ export default function Search() {
               </Link>
             </motion.div>
           ))}
+          
+          {/* Load More Button */}
+          {hasMore && (
+            <div className="mt-12 text-center">
+              <button
+                onClick={loadMore}
+                disabled={loadingMore}
+                className="px-8 py-3 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-bold rounded-full transition-colors disabled:opacity-50"
+              >
+                {loadingMore 
+                  ? (language === 'en' ? 'Loading...' : 'جاري التحميل...') 
+                  : (language === 'en' ? 'Load More Results' : 'عرض المزيد من النتائج')}
+              </button>
+            </div>
+          )}
         </div>
       )}
     </motion.div>

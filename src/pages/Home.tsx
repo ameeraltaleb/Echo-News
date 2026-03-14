@@ -21,14 +21,17 @@ export default function Home() {
   const { language, t } = useLanguage();
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const limit = 10;
 
   useEffect(() => {
     const fetchArticles = async () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`/api/articles?lang=${language}&limit=10`);
+        const res = await fetch(`/api/articles?lang=${language}&limit=${limit}&offset=0`);
         const contentType = res.headers.get('content-type');
         
         if (!res.ok) {
@@ -40,9 +43,11 @@ export default function Home() {
           const data = await res.json();
           if (Array.isArray(data)) {
             setArticles(data);
+            if (data.length < limit) setHasMore(false);
           } else {
             console.error('API returned non-array data:', data);
             setArticles([]);
+            setHasMore(false);
           }
         } else {
           throw new Error('API returned non-JSON data');
@@ -57,6 +62,27 @@ export default function Home() {
 
     fetchArticles();
   }, [language]);
+
+  const loadMore = async () => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    try {
+      const res = await fetch(`/api/articles?lang=${language}&limit=${limit}&offset=${articles.length}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          if (data.length < limit) {
+            setHasMore(false);
+          }
+          setArticles(prev => [...prev, ...data]);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load more articles', err);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -146,6 +172,8 @@ export default function Home() {
               alt={heroArticle.title} 
               className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-105"
               referrerPolicy="no-referrer"
+              loading="eager"
+              decoding="sync"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
             <div className="absolute bottom-0 left-0 right-0 p-8 lg:p-12">
@@ -237,6 +265,8 @@ export default function Home() {
                         alt={article.title} 
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                         referrerPolicy="no-referrer"
+                        loading="lazy"
+                        decoding="async"
                       />
                     </div>
                     <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-3 leading-snug group-hover:text-primary transition-colors break-words">
@@ -252,6 +282,21 @@ export default function Home() {
                 </motion.div>
               ))}
             </div>
+
+            {/* Load More Button */}
+            {hasMore && (
+              <div className="mt-12 text-center">
+                <button
+                  onClick={loadMore}
+                  disabled={loadingMore}
+                  className="px-8 py-3 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-bold rounded-full transition-colors disabled:opacity-50"
+                >
+                  {loadingMore 
+                    ? (language === 'en' ? 'Loading...' : 'جاري التحميل...') 
+                    : (language === 'en' ? 'Load More Articles' : 'عرض المزيد من المقالات')}
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Sidebar */}

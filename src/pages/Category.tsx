@@ -28,7 +28,10 @@ export default function Category() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [category, setCategory] = useState<CategoryData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const limit = 20;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -45,7 +48,7 @@ export default function Category() {
         setCategory(catData);
 
         // Fetch Articles for this category
-        const artRes = await fetch(`/api/articles?lang=${language}&category=${slug}&limit=20`);
+        const artRes = await fetch(`/api/articles?lang=${language}&category=${slug}&limit=${limit}&offset=0`);
         if (!artRes.ok) {
           const errorData = await artRes.json().catch(() => ({}));
           throw new Error(errorData.details || errorData.error || `Articles fetch failed: ${artRes.status}`);
@@ -53,9 +56,11 @@ export default function Category() {
         const artData = await artRes.json();
         if (Array.isArray(artData)) {
           setArticles(artData);
+          if (artData.length < limit) setHasMore(false);
         } else {
           console.error('API returned non-array data:', artData);
           setArticles([]);
+          setHasMore(false);
         }
       } catch (err: any) {
         console.error('Failed to fetch category data', err);
@@ -68,6 +73,27 @@ export default function Category() {
     fetchData();
     window.scrollTo(0, 0);
   }, [slug, language]);
+
+  const loadMore = async () => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    try {
+      const res = await fetch(`/api/articles?lang=${language}&category=${slug}&limit=${limit}&offset=${articles.length}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          if (data.length < limit) {
+            setHasMore(false);
+          }
+          setArticles(prev => [...prev, ...data]);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load more category articles', err);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const formatDate = (dateString: string) => {
     return formatDistanceToNow(new Date(dateString), {
@@ -188,6 +214,7 @@ export default function Category() {
                     alt={article.title} 
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     referrerPolicy="no-referrer"
+                    loading="lazy"
                   />
                   <div className="absolute top-4 left-4 rtl:left-auto rtl:right-4">
                     <span className="bg-primary text-white text-[10px] font-black px-3 py-1.5 uppercase tracking-widest shadow-lg">
@@ -213,6 +240,21 @@ export default function Category() {
               </Link>
             </motion.div>
           ))}
+        </div>
+      )}
+
+      {/* Load More Button */}
+      {articles.length > 0 && hasMore && (
+        <div className="mt-16 text-center">
+          <button
+            onClick={loadMore}
+            disabled={loadingMore}
+            className="px-10 py-4 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-bold rounded-full transition-colors disabled:opacity-50 tracking-wide"
+          >
+            {loadingMore 
+              ? (language === 'en' ? 'Loading...' : 'جاري التحميل...') 
+              : (language === 'en' ? 'Load More Articles' : 'عرض المزيد من المقالات')}
+          </button>
         </div>
       )}
     </motion.div>
