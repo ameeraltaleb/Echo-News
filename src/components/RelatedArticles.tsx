@@ -84,6 +84,7 @@ export default function RelatedArticles({ categorySlug, currentArticleId }: Rela
                 alt={article.title} 
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 referrerPolicy="no-referrer"
+                loading="lazy"
               />
             </div>
             <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 leading-tight group-hover:text-primary dark:group-hover:text-primary transition-colors line-clamp-2 mb-2 break-words">

@@ -81,6 +81,7 @@ export default function TrendingSidebar() {
                   alt={article.title} 
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   referrerPolicy="no-referrer"
+                  loading="lazy"
                 />
               </div>
             </div>
