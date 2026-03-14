@@ -11,6 +11,7 @@ export default async function handler(req, res) {
 
   const lang = req.query.lang || 'en';
   const limit = parseInt(String(req.query.limit)) || 20;
+  const offset = parseInt(String(req.query.offset)) || 0;
   const categorySlug = String(req.query.category || '');
   const searchQuery = String(req.query.q || '');
   const sort = String(req.query.sort || '');
@@ -35,6 +36,7 @@ export default async function handler(req, res) {
       ${searchQuery ? sql`AND (a.title_en ILIKE ${'%' + searchQuery + '%'} OR a.title_ar ILIKE ${'%' + searchQuery + '%'} OR a.summary_en ILIKE ${'%' + searchQuery + '%'} OR a.summary_ar ILIKE ${'%' + searchQuery + '%'})` : sql``}
       ORDER BY ${sort === 'views' ? sql`a.views DESC` : sql`a.published_at DESC`}
       LIMIT ${limit}
+      OFFSET ${offset}
     `;
     res.json(articles);
   } catch (error: any) {
