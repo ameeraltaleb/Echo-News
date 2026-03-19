@@ -4,9 +4,9 @@ let sqlInstance: any = null;
 
 export function getSql() {
   if (!sqlInstance) {
-    const connectionString = process.env.DATABASE_URL;
+    const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
     if (!connectionString) {
-      throw new Error('DATABASE_URL is not set');
+      throw new Error('Database connection string (POSTGRES_URL or DATABASE_URL) is not set');
     }
     sqlInstance = postgres(connectionString, {
       ssl: connectionString.includes('supabase.com') || connectionString.includes('pooler') 
