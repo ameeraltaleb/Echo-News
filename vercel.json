@@ -1,0 +1,33 @@
+{
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/robots.txt",
+      "destination": "/api/seo?type=robots"
+    },
+    {
+      "source": "/sitemap.xml",
+      "destination": "/api/seo?type=sitemap"
+    },
+    {
+      "source": "/news-sitemap.xml",
+      "destination": "/api/seo?type=news-sitemap"
+    },
+    {
+      "source": "/rss.xml",
+      "destination": "/api/seo?type=rss"
+    },
+    {
+      "source": "/article/(.*)",
+      "destination": "/api/seo?type=redirect&id=$1"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    },
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
+    }
+  ]
+}
