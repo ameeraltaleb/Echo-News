@@ -54,6 +54,30 @@ export async function initPostgresDb() {
       );
     `;
 
+    // Migration: Add slug column to existing tables if missing
+    await sql`ALTER TABLE categories ADD COLUMN IF NOT EXISTS slug TEXT UNIQUE;`;
+    await sql`ALTER TABLE articles ADD COLUMN IF NOT EXISTS slug TEXT UNIQUE;`;
+
+    // Migration: Populate missing categories slugs (fallback)
+    await sql`UPDATE categories SET slug = 'c-' || id WHERE slug IS NULL;`;
+
+    // Migration: Populate missing articles slugs
+    const articlesToUpdate = await sql`
+      SELECT id, title_en FROM articles WHERE slug IS NULL OR slug = '';
+    `;
+    if (articlesToUpdate.length > 0) {
+      console.log(`Populating slugs for ${articlesToUpdate.length} articles...`);
+      for (const a of articlesToUpdate) {
+        let slug = a.title_en.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+        if (!slug) slug = `article-${a.id}`;
+        try {
+          await sql`UPDATE articles SET slug = ${slug} WHERE id = ${a.id};`;
+        } catch {
+          await sql`UPDATE articles SET slug = ${slug + '-' + a.id} WHERE id = ${a.id};`;
+        }
+      }
+    }
+
     await sql`
       CREATE TABLE IF NOT EXISTS settings (
         key TEXT PRIMARY KEY,
