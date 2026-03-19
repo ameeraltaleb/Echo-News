@@ -1,5 +1,5 @@
-import { getSql, initPostgresDb } from '../../../src/db/postgres';
-import { verifyAuthHeader } from '../../_lib/auth';
+import { getSql, initPostgresDb } from '../../../src/db/postgres.js';
+import { verifyAuthHeader } from '../../_lib/auth.js';
 
 async function ensureDb() {
   await initPostgresDb();

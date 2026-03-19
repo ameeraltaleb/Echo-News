@@ -1,4 +1,4 @@
-import { getSql, initPostgresDb } from '../src/db/postgres';
+import { getSql, initPostgresDb } from '../src/db/postgres.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {

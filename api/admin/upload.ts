@@ -1,6 +1,6 @@
 import multer from 'multer';
-import { verifyAuthHeader } from '../_lib/auth';
-import { supabase } from '../_lib/supabase';
+import { verifyAuthHeader } from '../_lib/auth.js';
+import { supabase } from '../_lib/supabase.js';
 
 // Disable default Vercel body parser to handle multipart/form-data stream manually
 export const config = {

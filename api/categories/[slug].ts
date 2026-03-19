@@ -1,4 +1,4 @@
-import { getSql, initPostgresDb } from '../../src/db/postgres';
+import { getSql, initPostgresDb } from '../../src/db/postgres.js';
 
 async function ensureDb() {
   await initPostgresDb();
