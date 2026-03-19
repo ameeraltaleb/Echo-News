@@ -131,6 +131,28 @@ Allow: /rss.xml
       return res.status(200).send(rss);
     }
 
+    // 6. DEBUG (Diagnostic)
+    if (type === 'debug') {
+      const articleCount = await sql`SELECT COUNT(*) as count FROM articles`;
+      const categoryCount = await sql`SELECT COUNT(*) as count FROM categories`;
+      const settingsCount = await sql`SELECT COUNT(*) as count FROM settings`;
+      const sampleArticles = await sql`SELECT id, title_en, status, published_at FROM articles LIMIT 5`;
+
+      return res.status(200).json({
+        database: 'connected',
+        counts: {
+          articles: parseInt(articleCount[0].count),
+          categories: parseInt(categoryCount[0].count),
+          settings: parseInt(settingsCount[0].count)
+        },
+        sample: sampleArticles,
+        env: {
+          NODE_ENV: process.env.NODE_ENV,
+          VERCEL_ENV: process.env.VERCEL_ENV
+        }
+      });
+    }
+
     return res.status(400).json({ error: 'Invalid type' });
   } catch (err) {
     console.error('SEO Error:', err);
