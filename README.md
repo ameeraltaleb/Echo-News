@@ -1,20 +1,41 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Echo News
 
-# Run and deploy your AI Studio app
+## Comprehensive Project Documentation
 
-This contains everything you need to run your app locally.
+### Features
+- User-friendly interface
+- Real-time news updates
+- Search functionality for news articles
+- Filter articles by category
+- Bookmarking articles feature
 
-View your app in AI Studio: https://ai.studio/apps/535b5ad1-e5cb-4a27-81d2-41d1214b5e05
+### Installation Steps
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/ameeraltaleb/Echo-News.git
+   ```
+2. Navigate to the project directory:
+   ```bash
+   cd Echo-News
+   ```
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-## Run Locally
+### Tech Stack
+- React.js
+- Node.js
+- Express.js
+- MongoDB
+- Axios
 
-**Prerequisites:**  Node.js
+### Deployment Instructions
+1. Build the project for production:
+   ```bash
+   npm run build
+   ```
+2. Set up an environment for deployment (e.g., Heroku, AWS).
+3. Deploy the build folder to your preferred hosting service.
 
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+---
