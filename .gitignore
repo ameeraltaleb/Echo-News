@@ -1,8 +1,39 @@
+# Dependencies
 node_modules/
+package-lock.json
+yarn.lock
+
+# Build
 build/
 dist/
+.next/
+
+# Environment
+.env
+.env.local
+.env.*.local
+.vercel
+
+# Testing
 coverage/
+.nyc_output
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 .DS_Store
+
+# Logs
 *.log
-.env*
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Misc
+.cache/
+.vite/
 !.env.example
