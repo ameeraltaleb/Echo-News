@@ -41,10 +41,10 @@ export default async function handler(req, res) {
     res.json(articles);
   } catch (error: any) {
     console.error('API Articles Error:', error);
+    const isDev = process.env.NODE_ENV === 'development';
     res.status(500).json({ 
-      error: 'Failed to fetch articles', 
-      details: error.message,
-      env: process.env.NODE_ENV
+      error: 'Failed to fetch articles',
+      ...(isDev && { details: error.message })
     });
   }
 }
