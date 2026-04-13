@@ -3,7 +3,7 @@ import { getSql, initPostgresDb } from '../../src/db/postgres.js';
 export default async function handler(req, res) {
   const { id } = req.query;
   const lang = req.query.lang || 'en';
-
+  
   try {
     await initPostgresDb();
     const sql = getSql();
@@ -40,8 +40,7 @@ export default async function handler(req, res) {
   } catch (error: any) {
     console.error('API Article Detail Error:', error);
     res.status(500).json({ 
-      error: 'Failed to fetch article', 
-      details: error.message 
+      error: 'Failed to fetch article'
     });
   }
 }

@@ -22,23 +22,23 @@ export default async function handler(req, res) {
       const articles = await sql`
         SELECT id, slug, title_en, title_ar, category_id, published_at, views, author, status, tags,
                content_en, content_ar, summary_en, summary_ar, image_url
-        FROM articles 
+        FROM articles
         ORDER BY published_at DESC
       `;
       res.json(articles);
     } else if (method === 'POST') {
-      const { 
-        category_id, slug, title_en, title_ar, summary_en, summary_ar, 
-        content_en, content_ar, image_url, author, status, published_at, tags 
+      const {
+        category_id, slug, title_en, title_ar, summary_en, summary_ar,
+        content_en, content_ar, image_url, author, status, published_at, tags
       } = req.body;
-      
+
       const result = await sql`
         INSERT INTO articles (
-          category_id, slug, title_en, title_ar, summary_en, summary_ar, 
+          category_id, slug, title_en, title_ar, summary_en, summary_ar,
           content_en, content_ar, image_url, author, status, published_at, tags
         ) VALUES (
-          ${category_id}, ${slug}, ${title_en}, ${title_ar}, ${summary_en}, ${summary_ar}, 
-          ${content_en}, ${content_ar}, ${image_url}, ${author}, ${status || 'published'}, 
+          ${category_id}, ${slug}, ${title_en}, ${title_ar}, ${summary_en}, ${summary_ar},
+          ${content_en}, ${content_ar}, ${image_url}, ${author}, ${status || 'published'},
           ${published_at || new Date().toISOString()}, ${tags ? JSON.stringify(tags) : '[]'}
         ) RETURNING id
       `;
@@ -48,6 +48,6 @@ export default async function handler(req, res) {
     }
   } catch (error) {
     console.error('Article save error:', error);
-    res.status(500).json({ error: 'Failed to process request', details: error instanceof Error ? error.message : String(error) });
+    res.status(500).json({ error: 'Failed to process request' });
   }
 }

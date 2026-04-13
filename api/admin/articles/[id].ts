@@ -19,14 +19,14 @@ export default async function handler(req, res) {
     const sql = getSql();
 
     if (method === 'PUT') {
-      const { 
-        category_id, slug, title_en, title_ar, summary_en, summary_ar, 
-        content_en, content_ar, image_url, author, status, published_at, tags 
+      const {
+        category_id, slug, title_en, title_ar, summary_en, summary_ar,
+        content_en, content_ar, image_url, author, status, published_at, tags
       } = req.body;
       await sql`
-        UPDATE articles SET 
-          category_id = ${category_id}, slug = ${slug}, title_en = ${title_en}, title_ar = ${title_ar}, 
-          summary_en = ${summary_en}, summary_ar = ${summary_ar}, content_en = ${content_en}, 
+        UPDATE articles SET
+          category_id = ${category_id}, slug = ${slug}, title_en = ${title_en}, title_ar = ${title_ar},
+          summary_en = ${summary_en}, summary_ar = ${summary_ar}, content_en = ${content_en},
           content_ar = ${content_ar}, image_url = ${image_url}, author = ${author}, status = ${status},
           published_at = ${published_at || new Date().toISOString()}, tags = ${tags ? JSON.stringify(tags) : '[]'}
         WHERE id = ${id}
@@ -45,6 +45,6 @@ export default async function handler(req, res) {
     }
   } catch (error) {
     console.error('Admin article process error:', error);
-    res.status(500).json({ error: 'Failed to process request', details: error instanceof Error ? error.message : String(error) });
+    res.status(500).json({ error: 'Failed to process request' });
   }
 }

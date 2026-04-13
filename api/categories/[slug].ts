@@ -14,8 +14,8 @@ export default async function handler(req, res) {
     const langCol = lang === 'ar' ? 'name_ar' : 'name_en';
 
     const categories = await sql`
-      SELECT id, ${sql(langCol)} as name, slug 
-      FROM categories 
+      SELECT id, ${sql(langCol)} as name, slug
+      FROM categories
       WHERE slug = ${slug}
     `;
 
@@ -26,9 +26,8 @@ export default async function handler(req, res) {
     res.json(categories[0]);
   } catch (error: any) {
     console.error('API Category Detail Error:', error);
-    res.status(500).json({ 
-      error: 'Failed to fetch category', 
-      details: error.message 
+    res.status(500).json({
+      error: 'Failed to fetch category'
     });
   }
 }

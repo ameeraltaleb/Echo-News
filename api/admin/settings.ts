@@ -20,7 +20,7 @@ export default async function handler(req, res) {
 
     if (req.method === 'GET') {
       const settingsRecords = await sql`SELECT key, value FROM settings`;
-      
+
       // Convert to simple key-value object for the frontend
       const settings = settingsRecords.reduce((acc: any, row: any) => {
         acc[row.key] = row.value;
@@ -30,25 +30,24 @@ export default async function handler(req, res) {
       res.json(settings);
     } else if (req.method === 'POST') {
       const settings = req.body;
-      
+
       // Update each setting
       for (const [key, value] of Object.entries(settings)) {
         await sql`
-          INSERT INTO settings (key, value) 
+          INSERT INTO settings (key, value)
           VALUES (${key}, ${String(value)})
           ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value
         `;
       }
-      
+
       res.json({ success: true });
     } else {
       res.status(405).json({ error: 'Method not allowed' });
     }
   } catch (error: any) {
     console.error('API Admin Settings Error:', error);
-    res.status(500).json({ 
-      error: 'Failed to process settings', 
-      details: error.message 
+    res.status(500).json({
+      error: 'Failed to process settings'
     });
   }
 }

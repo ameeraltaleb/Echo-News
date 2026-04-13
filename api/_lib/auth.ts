@@ -1,6 +1,15 @@
 import { SignJWT, jwtVerify } from 'jose';
 
-const getSecret = () => new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_secret_for_dev_only');
+const getSecret = () => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT_SECRET environment variable is not set');
+  }
+  if (secret.length < 32) {
+    console.warn('Warning: JWT_SECRET should be at least 32 characters long for security');
+  }
+  return new TextEncoder().encode(secret);
+};
 
 export async function generateToken(payload: any) {
   return await new SignJWT(payload)

@@ -1,39 +1,52 @@
+```
+# Environment
+.env.local
+.env.*
+
 # Dependencies
 node_modules/
-package-lock.json
-yarn.lock
 
-# Build
-build/
+# Build artifacts
 dist/
-.next/
+build/
+target/
 
-# Environment
-.env
-.env.local
-.env.*.local
-.vercel
+# Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.py.class
 
-# Testing
-coverage/
-.nyc_output
+# Logs
+*.log
 
-# IDE
+# Editor
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
+*.tmp
+
+# OS
 .DS_Store
+Thumbs.db
 
-# Logs
-*.log
-logs/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# Coverage
+coverage/
+htmlcov/
+.coverage
 
-# Misc
-.cache/
-.vite/
-!.env.example
+# MyPy
+.mypy_cache/
+
+# Pytest
+.pytest_cache/
+
+# Gradle
+.gradle/
+
+# Temporary files
+*.tmp
+*.temp
+```
