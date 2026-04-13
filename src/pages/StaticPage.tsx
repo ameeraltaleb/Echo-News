@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { useLanguage } from '../i18n/LanguageContext';
+import { Helmet } from 'react-helmet-async';
 
 const pageContent = {
   about: {
@@ -100,6 +101,14 @@ export default function StaticPage() {
   }
 
   const data = pageData[language as 'en' | 'ar'];
+  
+  const siteName = import.meta.env.VITE_SITE_NAME || 'ECHO NEWS';
+  const pageTitle = `${data.title} | ${siteName}`;
+  const pageDesc = language === 'en'
+    ? `Read about ${data.title.toLowerCase()} on ECHO NEWS. ${slug === 'about' ? 'Learn more about our mission and team.' : slug === 'terms' ? 'Review our terms and conditions for using ECHO NEWS services.' : slug === 'privacy' ? 'Understand how we collect and protect your personal information.' : slug === 'cookies' ? 'Learn about our cookie usage and how to manage your preferences.' : slug === 'accessibility' ? 'Our commitment to digital accessibility for all users.' : slug === 'sitemap' ? 'Navigate through all sections of ECHO NEWS website.' : slug === 'newsletters' ? 'Subscribe to our newsletters for daily news updates.' : ''}`
+    : language === 'ar'
+    ? `اقرأ عن ${data.title.toLowerCase()} على إيكو نيوز. ${slug === 'about' ? 'تعرف أكثر على مهمتنا وفريقنا.' : slug === 'terms' ? 'راجع أحكام وشروط استخدام خدمات إيكو نيوز.' : slug === 'privacy' ? 'افهم كيف نجمع ونحمي معلوماتك الشخصية.' : slug === 'cookies' ? 'تعرف على استخدامنا لملفات تعريف الارتباط وكيفية إدارة تفضيلاتك.' : slug === 'accessibility' ? 'التزامنا بإمكانية الوصول الرقمي لجميع المستخدمين.' : slug === 'sitemap' ? 'تصفح عبر جميع أقسام موقع إيكو نيوز.' : slug === 'newsletters' ? 'اشترك في نشراتنا البريدية لتحديثات الأخبار اليومية.' : ''}`
+    : data.content.substring(0, 160);
 
   // Helper to render links in sitemap
   const renderContent = (text: string) => {
@@ -138,22 +147,37 @@ export default function StaticPage() {
   };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8 w-full"
-    >
-      <div className="bg-white dark:bg-zinc-950 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 p-8 md:p-12">
-        <h1 className="text-3xl md:text-4xl font-black text-zinc-900 dark:text-zinc-100 mb-8 pb-6 border-b border-zinc-200 dark:border-zinc-800">
-          {data.title}
-        </h1>
+    <>
+      <Helmet>
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDesc} />
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDesc} />
+        <meta property="og:type" content="article" />
+        <link rel="canonical" href={window.location.href} />
         
-        <div className="prose prose-lg prose-zinc dark:prose-invert max-w-none break-words">
-          {slug === 'sitemap' ? (
-            <ul className="pl-0 m-0">{renderContent(data.content)}</ul>
-          ) : (
-            renderContent(data.content)
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDesc} />
+      </Helmet>
+      
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8 w-full"
+      >
+        <div className="bg-white dark:bg-zinc-950 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 p-8 md:p-12">
+          <h1 className="text-3xl md:text-4xl font-black text-zinc-900 dark:text-zinc-100 mb-8 pb-6 border-b border-zinc-200 dark:border-zinc-800">
+            {data.title}
+          </h1>
+          
+          <div className="prose prose-lg prose-zinc dark:prose-invert max-w-none break-words">
+            {slug === 'sitemap' ? (
+              <ul className="pl-0 m-0">{renderContent(data.content)}</ul>
+            ) : (
+              renderContent(data.content)
           )}
         </div>
       </div>

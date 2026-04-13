@@ -1,0 +1,42 @@
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://echonews.com/sitemap.xml
+Sitemap: https://echonews.com/news-sitemap.xml
+
+# Disallow admin areas
+Disallow: /admin
+Disallow: /api/admin/
+Disallow: /api/_lib/
+Disallow: /src/
+Disallow: /tests/
+Disallow: /node_modules/
+
+# Allow article and news URLs
+Allow: /article/
+Allow: /news/
+Allow: /category/
+Allow: /api/articles
+Allow: /rss.xml
+
+# Crawl-delay for polite crawling
+Crawl-delay: 1
+
+# Googlebot specific
+User-agent: Googlebot
+Allow: /
+Allow: /*.js$
+Allow: /*.css$
+
+# Bingbot specific
+User-agent: Bingbot
+Allow: /
+
+# Twitterbot
+User-agent: Twitterbot
+Allow: /
+
+# Facebook External Hit
+User-agent: facebookexternalhit
+Allow: /

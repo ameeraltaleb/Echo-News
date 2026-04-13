@@ -154,6 +154,28 @@ export default function Home() {
   const siteName = t('site.name') || 'Echo News';
   const siteDesc = t('site.description') || 'Latest news and updates';
 
+  // Generate JSON-LD for homepage
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": siteName,
+    "description": siteDesc,
+    "url": window.location.origin,
+    "publisher": {
+      "@type": "NewsMediaOrganization",
+      "name": siteName,
+      "logo": {
+        "@type": "ImageObject",
+        "url": `${window.location.origin}/logo.png`
+      }
+    },
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": `${window.location.origin}/search?q={search_term_string}`,
+      "query-input": "required name=search_term_string"
+    }
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -168,6 +190,11 @@ export default function Home() {
         <meta property="og:description" content={siteDesc} />
         <meta property="og:type" content="website" />
         <link rel="canonical" href={window.location.origin} />
+        
+        {/* Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify(jsonLd)}
+        </script>
       </Helmet>
 
       {/* Top Section: Hero + Secondary */}
