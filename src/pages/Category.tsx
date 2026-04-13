@@ -168,6 +168,28 @@ export default function Category() {
     ? `Latest news and updates from ${category.name}` 
     : `آخر الأخبار والتحديثات من قسم ${category.name}`;
 
+  // Generate JSON-LD for category page
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": category.name,
+    "description": pageDesc,
+    "url": window.location.href,
+    "publisher": {
+      "@type": "NewsMediaOrganization",
+      "name": siteName,
+      "logo": {
+        "@type": "ImageObject",
+        "url": `${window.location.origin}/logo.png`
+      }
+    },
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": siteName,
+      "url": window.location.origin
+    }
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0 }}
@@ -182,6 +204,11 @@ export default function Category() {
         <meta property="og:description" content={pageDesc} />
         <meta property="og:type" content="website" />
         <link rel="canonical" href={window.location.href} />
+        
+        {/* Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify(jsonLd)}
+        </script>
       </Helmet>
       {/* Category Header */}
       <motion.div 

@@ -6,6 +6,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { ar, enUS } from 'date-fns/locale';
 import { Search as SearchIcon, ArrowRight, ArrowLeft } from 'lucide-react';
 import { ArticleCardSkeleton } from '../components/Skeleton';
+import { Helmet } from 'react-helmet-async';
 
 interface Article {
   id: number;
@@ -26,6 +27,55 @@ export default function Search() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const limit = 20;
+  
+  const siteName = import.meta.env.VITE_SITE_NAME || 'ECHO NEWS';
+  const pageTitle = query 
+    ? `${language === 'en' ? 'Search Results for' : 'نتائج البحث عن'} "${query}" | ${siteName}`
+    : `${language === 'en' ? 'Search' : 'بحث'} | ${siteName}`;
+  const pageDesc = query
+    ? language === 'en'
+      ? `Find news articles matching "${query}". Stay informed with the latest breaking news and updates.`
+      : `ابحث عن المقالات الإخبارية المطابقة لـ "${query}". ابق على اطلاع بأحدث الأخبار العاجلة والتحديثات.`
+    : language === 'en'
+      ? 'Search for news articles across all categories on ECHO NEWS.'
+      : 'ابحث عن المقالات الإخبارية عبر جميع الأقسام في إيكو نيوز.';
+
+  // Generate JSON-LD for search page
+  const jsonLd = query ? {
+    "@context": "https://schema.org",
+    "@type": "SearchResultsPage",
+    "name": pageTitle,
+    "description": pageDesc,
+    "url": window.location.href,
+    "publisher": {
+      "@type": "NewsMediaOrganization",
+      "name": siteName,
+      "logo": {
+        "@type": "ImageObject",
+        "url": `${window.location.origin}/logo.png`
+      }
+    },
+    "mainEntity": {
+      "@type": "ItemList",
+      "numberOfItems": articles.length,
+      "itemListElement": articles.map((article, index) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "url": `${window.location.origin}/article/${article.id}`,
+        "name": article.title
+      }))
+    }
+  } : {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": pageTitle,
+    "description": pageDesc,
+    "url": window.location.href,
+    "publisher": {
+      "@type": "NewsMediaOrganization",
+      "name": siteName
+    }
+  };
 
   useEffect(() => {
     const fetchResults = async () => {
@@ -107,12 +157,35 @@ export default function Search() {
   }
 
   return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className="w-full"
-    >
+    <>
+      <Helmet>
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDesc} />
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDesc} />
+        <meta property="og:type" content="website" />
+        <link rel="canonical" href={window.location.href} />
+        
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDesc} />
+        
+        {/* Noindex for search results pages to avoid thin content */}
+        {query && <meta name="robots" content="noindex, follow" />}
+        
+        {/* Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify(jsonLd)}
+        </script>
+      </Helmet>
+      
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="w-full"
+      >
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -207,6 +280,7 @@ export default function Search() {
           )}
         </div>
       )}
-    </motion.div>
+      </motion.div>
+    </>
   );
 }
