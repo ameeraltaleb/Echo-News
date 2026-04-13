@@ -6,9 +6,15 @@ export default async function handler(req, res) {
   }
 
   const { password } = req.body;
-  const expectedPassword = (process.env.ADMIN_PASSWORD || 'admin123').trim();
-  
-  if ((password || '').trim() === expectedPassword) {
+  const expectedPassword = process.env.ADMIN_PASSWORD;
+
+  // Require ADMIN_PASSWORD to be set in production
+  if (!expectedPassword) {
+    console.error('ADMIN_PASSWORD environment variable is not set');
+    return res.status(500).json({ error: 'Server configuration error' });
+  }
+
+  if ((password || '').trim() === expectedPassword.trim()) {
     const token = await generateToken({ role: 'admin' });
     res.json({ token });
   } else {

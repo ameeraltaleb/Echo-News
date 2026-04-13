@@ -1,13 +1,13 @@
 import { GoogleGenAI } from '@google/genai';
 import { verifyAuthHeader } from '../_lib/auth.js';
 
-const ai = new GoogleGenAI({ 
-  apiKey: process.env.GEMINI_API_KEY 
+const ai = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY
 });
 
 const SYSTEM_PROMPT = `
 You are an expert dual-language (Arabic and English) journalistic AI assistant for a professional news website.
-Your task is to take a user's prompt (which might be a short idea, a headline, or a few sentences) and generate a fully structured, professional, and highly engaging news article. 
+Your task is to take a user's prompt (which might be a short idea, a headline, or a few sentences) and generate a fully structured, professional, and highly engaging news article.
 
 You MUST return the output EXACTLY as a raw JSON object with the following structure. Pay close attention to the HTML formatting requirements for the content fields.
 
@@ -45,9 +45,9 @@ export default async function handler(req: any, res: any) {
     if (!prompt || typeof prompt !== 'string') {
       return res.status(400).json({ error: 'A valid written prompt is required.' });
     }
-    
+
     if (!process.env.GEMINI_API_KEY) {
-      return res.status(500).json({ error: 'GEMINI_API_KEY is missing on the server.' });
+      return res.status(500).json({ error: 'Server configuration error' });
     }
 
     // 3. Call Gemini
@@ -62,7 +62,7 @@ export default async function handler(req: any, res: any) {
     });
 
     const outputText = response.text || '';
-    
+
     // 4. Clean and parse the output
     // Gemini sometimes wraps JSON in markdown blocks despite instructions
     let jsonStr = outputText.trim();
@@ -74,16 +74,10 @@ export default async function handler(req: any, res: any) {
 
     const generatedArticle = JSON.parse(jsonStr);
 
-    console.log('--- GEMINI GENERATED KEYS ---');
-    console.log(Object.keys(generatedArticle));
-    if (!generatedArticle.content_en || generatedArticle.content_en.trim() === '') {
-       console.log('WARNING: content_en is EMPTY or MISSING!');
-    }
-    
     // 5. Return to frontend
     res.status(200).json(generatedArticle);
   } catch (err: any) {
     console.error('Gemini API Error:', err);
-    res.status(500).json({ error: 'Failed to generate article using AI.', details: err.message });
+    res.status(500).json({ error: 'Failed to generate article using AI.' });
   }
 }

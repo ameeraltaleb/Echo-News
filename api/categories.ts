@@ -32,9 +32,10 @@ export default async function handler(req, res) {
     }
   } catch (error: any) {
     console.error('API Categories Error:', error);
+    const isDev = process.env.NODE_ENV === 'development';
     res.status(500).json({ 
       error: 'Failed to fetch categories',
-      details: error.message 
+      ...(isDev && { details: error.message }) 
     });
   }
 }
